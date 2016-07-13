@@ -17,7 +17,7 @@
 #include "FileFormats/FZFile.h"
 #include "confparse.h"
 #include "resource.h"
-#ifdef _MSC_VER
+#ifdef defined(_MSC_VER) || defined(__ANDROID__)
 #include <SDL.h>
 #else
 #include <SDL2/SDL.h>
@@ -69,6 +69,7 @@ struct globals {
 	}
 };
 
+BoardView app{};
 static SDL_GLContext glcontext = NULL;
 static SDL_Window *window      = nullptr;
 
@@ -215,7 +216,6 @@ int main(int argc, char **argv) {
 	uint8_t sleepout;
 	std::string configDir;
 	globals g; // because some things we have to store *before* we load the config file in BoardView app.obvconf
-	BoardView app{};
 
 	/*
 	 * Parse the parameters first up, store the results in the global struct.
