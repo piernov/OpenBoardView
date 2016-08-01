@@ -25,6 +25,7 @@
 
 #include "NetList.h"
 #include "PartList.h"
+#include "PdfReader.h"
 #include "vectorhulls.h"
 
 #include "platform.h"
@@ -1023,6 +1024,9 @@ void BoardView::Update() {
 			if (ImGui::MenuItem("Part List", "k")) {
 				m_showPartList = m_showPartList ? false : true;
 			}
+			if (ImGui::MenuItem("PDF Reader", "p")) {
+				m_showPdfReader = m_showPdfReader ? false : true;
+			}
 			ImGui::EndMenu();
 		}
 
@@ -1489,6 +1493,11 @@ void BoardView::HandleInput() {
 		} else {
 			// fprintf(stderr,"F");
 		}
+
+		// Show PDF Reader
+		if (ImGui::IsKeyPressed('P')||ImGui::IsKeyPressed('p')) {
+			m_showPdfReader = m_showPdfReader ? false : true;
+		}
 	}
 }
 
@@ -1508,6 +1517,11 @@ void BoardView::ShowPartList(bool *p_open) {
 	partList.Draw("Part List", p_open, m_board);
 }
 
+void BoardView::ShowPdfReader(bool *p_open) {
+	static PdfReader pdfReader(m_board);
+	pdfReader.Draw("PDF Reader", p_open, m_board);
+}
+
 void BoardView::RenderOverlay() {
 
 	// Listing of Net elements
@@ -1516,6 +1530,9 @@ void BoardView::RenderOverlay() {
 	}
 	if (m_showPartList) {
 		ShowPartList(&m_showPartList);
+	}
+	if (m_showPdfReader) {
+		ShowPdfReader(&m_showPdfReader);
 	}
 }
 

@@ -186,6 +186,7 @@ struct BoardView {
 	bool m_showComponentSearch;
 	bool m_showNetList;
 	bool m_showPartList;
+	bool m_showPdfReader;
 	bool m_showHelpAbout;
 	bool m_showHelpControls;
 	bool m_firstFrame = true;
@@ -196,6 +197,7 @@ struct BoardView {
 
 	void ShowNetList(bool *p_open);
 	void ShowPartList(bool *p_open);
+	void ShowPdfReader(bool *p_open);
 
 	void Update();
 	void HandleInput();

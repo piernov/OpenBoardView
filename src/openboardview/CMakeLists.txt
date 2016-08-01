@@ -36,9 +36,13 @@ include_directories(
 	${OPENGL_INCLUDE_DIR}
 	${ZLIB_INCLUDE_DIRS}
 	${SQLITE3_INCLUDE_DIRS}
+
+	/usr/include/pdfium/public
 )
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+link_directories(/usr/lib/pdfium)
+
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 if(MINGW)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNICODE -D_UNICODE")
 endif()
@@ -58,6 +62,7 @@ set(SOURCES
 	main_opengl.cpp
 	NetList.cpp
 	PartList.cpp
+	PdfReader.cpp
 	TextureDDS.cpp
 )
 
@@ -71,6 +76,30 @@ if(ENABLE_GLES2)
 		imgui_impl_sdl_gles2.cpp
 	)
 endif()
+
+set(PDFIUM_LIBRARIES
+	pdfium
+	fpdfapi
+	fxge
+	fpdfdoc
+	fpdftext
+	fpdfapi
+	fxcrt
+	fx_agg
+	fxcodec
+	fx_lpng
+	fx_libopenjpeg
+	fx_lcms2
+	fx_freetype
+	jpeg
+	fx_zlib
+	fdrm
+	pdfwindow
+	bigint
+	formfiller
+	javascript
+	fxedit
+)
 
 if(UNIX)
 	if(APPLE)
@@ -107,6 +136,7 @@ target_link_libraries(openboardview
 	${SDL2_LIBRARY}
 	${ZLIB_LIBRARIES}
 	${SQLITE3_LIBRARIES}
+	${PDFIUM_LIBRARIES}
 )
 
 if(ENABLE_GL3)
