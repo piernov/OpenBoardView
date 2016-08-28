@@ -14,7 +14,7 @@ matrix:
     env: DEPLOY=yes DEPLOY_RPM=yes
   - os: osx
     compiler: clang
-    env: DEPLOY=yes MACOSX_DEPLOYMENT_TARGET=10.7
+    env: DEPLOY=yes MACOSX_DEPLOYMENT_TARGET=10.7 CXXFLAGS="-stdlib=libc++"
   - os: linux
     compiler: gcc
     env: CROSS=mingw64 DEPLOY=yes
