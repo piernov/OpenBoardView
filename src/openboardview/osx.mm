@@ -9,7 +9,8 @@ const std::string show_file_picker() {
 	std::string filename;
 	NSOpenPanel *op = [NSOpenPanel openPanel];
 
-	if ([op runModal] == NSModalResponseOK) {
+/*	if ([op runModal] == NSModalResponseOK) {*/
+	if ([op runModal] == NSOKButton) {
 		NSURL *nsurl = [[op URLs] objectAtIndex:0];
 		filename = std::string([[nsurl path] UTF8String]);
 	}
@@ -23,8 +24,13 @@ const std::string get_font_path(const std::string &name) {
 	std::string filename;
 
 	NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
-	if (!name.empty()) attrs[(id)kCTFontDisplayNameAttribute] = [NSString stringWithUTF8String:name.c_str()]; // Match the font display name
+/*	if (!name.empty()) attrs[(id)kCTFontDisplayNameAttribute] = [NSString stringWithUTF8String:name.c_str()]; // Match the font display name
 	attrs[(id)kCTFontFormatAttribute] = [NSNumber numberWithUnsignedInt:kCTFontFormatOpenTypeTrueType]; // Match OpenType TrueType fonts (won't work with plain TrueType)
+*/
+
+	if (!name.empty())
+		[attrs setObject:[NSString stringWithUTF8String:name.c_str()] forKey:(id)kCTFontDisplayNameAttribute]; // Match the font display name
+	[attrs setObject:[NSNumber numberWithUnsignedInt:kCTFontFormatOpenTypeTrueType] forKey:(id)kCTFontFormatAttribute]; // Match OpenType TrueType fonts (won't work with plain TrueType)
 
 	CTFontDescriptorRef fontDescriptor = CTFontDescriptorCreateWithAttributes((CFDictionaryRef) attrs);
 	CFMutableSetRef mandatoryAttributes = CFSetCreateMutable(NULL, 0, &kCFTypeSetCallBacks);
