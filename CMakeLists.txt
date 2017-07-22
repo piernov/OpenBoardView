@@ -1,4 +1,4 @@
-if(POLICY CMP0048)
+﻿if(POLICY CMP0048)
 	cmake_policy(SET CMP0048 OLD)
 endif()
 set(PROJECT_VERSION "R7.4")
@@ -73,10 +73,10 @@ endif()
 set(CMAKE_MACOSX_RPATH ON)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror=format-security")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 if(NOT MSVC)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wextra")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra -Werror=format-security")
 endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 add_definitions(-DOBV_BUILD="${OBV_BUILD}") # Build info

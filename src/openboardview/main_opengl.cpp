@@ -1,4 +1,4 @@
-/**
+﻿/**
  * OpenBoardView
  *
  * Copyright inflex 2016 (Paul Daniels)
@@ -97,13 +97,13 @@ int parse_parameters(int argc, char **argv, struct globals *g) {
 	 * parameter, so in this special case situation we see if the
 	 * single param is a valid file, and try load it.
 	 */
-	if (argc == 2) {
+/*	if (argc == 2) {
 		if( access( argv[1], F_OK ) != -1 ) {
 			g->input_file = argv[1];
 			return 0;
 		}
 	}
-
+*/
 
 	/**
 	 * Decode the input parameters.

@@ -1,4 +1,4 @@
-#include "platform.h"
+﻿#include "platform.h"
 #include "utils.h"
 #include <algorithm>
 #include <assert.h>
@@ -10,7 +10,7 @@
 #include <sstream>
 #include <stdint.h>
 
-#include <dirent.h>
+//#include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -62,6 +62,7 @@ bool compare_string_insensitive(const std::string &str1, const std::string &str2
 // Case insensitive lookup of a filename at the given path
 std::string lookup_file_insensitive(const std::string &path, const std::string &filename) {
 	std::string filefound;
+#if 0
 	DIR *dir;
 	struct dirent *dent;
 
@@ -72,6 +73,7 @@ std::string lookup_file_insensitive(const std::string &path, const std::string &
 		std::string cfile(dent->d_name);
 		if (compare_string_insensitive(cfile, filename)) filefound = path + cfile;
 	}
+#endif
 	return filefound;
 }
 
