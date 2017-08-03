@@ -360,9 +360,11 @@ int main(int argc, char **argv) {
 	cleanupAndExit(1);
 #endif
 
+	// SDL disables screen saver by default which doesn't make sense for us.
+	SDL_EnableScreenSaver();
+
 	ImGuiIO &io    = ImGui::GetIO();
 	io.IniFilename = NULL;
-	//	io.Fonts->AddFontDefault();
 
 	// Main loop
 	bool done             = false;
