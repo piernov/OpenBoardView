@@ -280,7 +280,7 @@ int main(int argc, char **argv) {
 
 	// Main loop
 	bool done             = false;
-	bool preload_required = false;
+	char *preload_file = nullptr;
 
 	// Set the dpi, if we've not set any parameters it'll be 0 which
 	// will make the ConfigParse load and set the right dpi.
@@ -345,7 +345,7 @@ int main(int argc, char **argv) {
 	 * in to OBV
 	 */
 	if (g.input_file) {
-		preload_required = true;
+		preload_file = strdup(g.input_file);
 	}
 
 	/*
@@ -371,7 +371,7 @@ int main(int argc, char **argv) {
 			Renderers::current->processEvent(event);
 
 			if (event.type == SDL_DROPFILE) {
-				app.LoadFile(filesystem::u8path(event.drop.file));
+				preload_file = strdup(event.drop.file);
 			} else if(event.type == SDL_MULTIGESTURE && event.mgesture.numFingers == 2 && !ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
 				//Inhibit dragging board area
 				app.m_dragging_token = -1;
@@ -426,9 +426,9 @@ int main(int argc, char **argv) {
 
 		// If we have a board to view being passed from command line, then "inject"
 		// it here.
-		if (preload_required) {
-			app.LoadFile(filesystem::u8path(g.input_file));
-			preload_required = false;
+		if (preload_file != nullptr) {
+			app.LoadFile(filesystem::u8path(preload_file));
+			preload_file = nullptr;
 		}
 
 		app.Update();
