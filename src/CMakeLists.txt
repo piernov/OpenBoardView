@@ -55,7 +55,15 @@ set(GLAD_NO_LOADER ON CACHE BOOL "Disable loader" FORCE) # We're using SDL2 load
 add_subdirectory(glad)
 
 ## SDL2 ##
-find_package(SDL2 REQUIRED CONFIG)
+if(ANDROID)
+	add_library(SDL2 SHARED IMPORTED)
+	set(SDL2_LIBRARIES "SDL2")
+	set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION
+		"${CMAKE_CURRENT_SOURCE_DIR}/android/libs/SDL2/build/intermediates/ndkBuild/release/obj/local/${ANDROID_ABI}/libSDL2.so")
+	set(SDL2_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/SDL2/include")
+else()
+	find_package(SDL2 REQUIRED CONFIG)
+endif()
 add_definitions(-DENABLE_SDL2)
 
 ## imgui ##
