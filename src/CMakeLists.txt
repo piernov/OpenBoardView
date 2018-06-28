@@ -56,6 +56,10 @@ add_subdirectory(glad)
 
 ## SDL2 ##
 if(ANDROID)
+	execute_process(
+		COMMAND git submodule update --init src/SDL2
+		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+	)
 	add_library(SDL2 SHARED IMPORTED)
 	set(SDL2_LIBRARIES "SDL2")
 	set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION
