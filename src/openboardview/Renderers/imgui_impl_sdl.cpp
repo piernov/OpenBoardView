@@ -23,6 +23,9 @@
 #endif
 #include <glad/glad.h>
 
+#include <cairo/cairo.h>
+#include <cairo/cairo-pdf.h>
+
 // Data
 static double g_Time          = 0.0f;
 static bool g_MousePressed[3] = {false, false, false};
@@ -72,6 +75,11 @@ void ImGui_ImplSdl_RenderDrawLists(ImDrawData *draw_data) {
 	glPushMatrix();
 	glLoadIdentity();
 
+
+	//Cairo PDF
+	cairo_surface_t *cairo_surface = cairo_pdf_surface_create("file.pdf", fb_width, fb_height);
+	cairo_t *cr = cairo_create(cairo_surface);
+
 // Render command lists
 #define OFFSETOF(TYPE, ELEMENT) ((size_t) & (((TYPE *)0)->ELEMENT))
 	for (int n = 0; n < draw_data->CmdListsCount; n++) {
@@ -97,6 +105,34 @@ void ImGui_ImplSdl_RenderDrawLists(ImDrawData *draw_data) {
 				               (GLsizei)pcmd->ElemCount,
 				               sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
 				               idx_buffer);
+
+				// Cairo PDF
+				for (int i = 0; i < pcmd->ElemCount; i+=3) {
+                        ImDrawVert vert1 = vtx_buffer[idx_buffer[i]];
+                        ImVec2 pos1 = vert1.pos;
+                        ImU32 col1 = vert1.col;
+                        ImColor col1c = ImColor(col1);
+                        ImVec4 col1v = ImVec4(col1c);
+                        ImDrawVert vert2 = vtx_buffer[idx_buffer[i+1]];
+                        ImVec2 pos2 = vert2.pos;
+                        ImU32 col2 = vert2.col;
+                        ImColor col2c = ImColor(col2);
+                        ImVec4 col2v = ImVec4(col2c);
+                        ImDrawVert vert3 = vtx_buffer[idx_buffer[i+2]];
+                        ImVec2 pos3 = vert3.pos;
+                        ImU32 col3 = vert3.col;
+                        ImColor col3c = ImColor(col3);
+                        ImVec4 col3v = ImVec4(col3c);
+
+                        cairo_set_source_rgba(cr, col1v.x, col1v.y, col1v.z, col1v.w);
+                        cairo_move_to(cr, pos1.x, pos1.y);
+                        cairo_set_source_rgba(cr, col2v.x, col2v.y, col2v.z, col2v.w);
+                        cairo_line_to(cr, pos2.x, pos2.y);
+                        cairo_set_source_rgba(cr, col3v.x, col3v.y, col3v.z, col3v.w);
+                        cairo_line_to(cr, pos3.x, pos3.y);
+                        cairo_close_path (cr);
+                        cairo_fill(cr);
+				}
 			}
 			idx_buffer += pcmd->ElemCount;
 		}
@@ -115,6 +151,11 @@ void ImGui_ImplSdl_RenderDrawLists(ImDrawData *draw_data) {
 	glPopAttrib();
 	glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);
 	glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3]);
+
+	// Cairo PDF
+	cairo_show_page(cr);
+	cairo_surface_destroy(cairo_surface);
+	cairo_destroy(cr);
 }
 
 static const char *ImGui_ImplSdl_GetClipboardText(void *) {
