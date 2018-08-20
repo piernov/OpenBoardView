@@ -1,8 +1,7 @@
 # Define project variables
 
-project(OpenBoardView)
+project(OpenBoardView VERSION "7.4" )
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
-set(PROJECT_VERSION "R7.4")
 set(PROJECT_URL "http://openboardview.org")
 set(PROJECT_LICENSE "MIT")
 file(READ "LICENSE" PROJECT_LICENSE_TEXT)

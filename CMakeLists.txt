@@ -1,8 +1,4 @@
-cmake_minimum_required(VERSION 2.8.9)
-# Disable 3.0 VERSION setting, we will set it manually since we support 2.8
-if(POLICY CMP0048)
-	cmake_policy(SET CMP0048 OLD)
-endif()
+cmake_minimum_required(VERSION 3.0)
 
 # Set OSX target version, before calling project() (inside version.cmake)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
@@ -121,7 +117,7 @@ elseif(UNIX)
 	set(CPACK_GENERATOR DEB RPM CACHE STRING "List of generators to build packages with")
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "zlib1g, libgtk-3-0, sqlite3, libsdl2-2.0-0, libfontconfig1")
 	set(CPACK_DEBIAN_PACKAGE_SECTION "Electronics")
-	set(CPACK_DEBIAN_PACKAGE_VERSION "1${PROJECT_VERSION}")
+	set(CPACK_DEBIAN_PACKAGE_VERSION "${PROJECT_VERSION}")
 	set(CPACK_RPM_PACKAGE_GROUP "Applications/Engineering")
 	set(CPACK_RPM_PACKAGE_REQUIRES "gtk3") # Probably not working
 	set(CPACK_RPM_PACKAGE_LICENSE "${PROJECT_LICENSE}")
