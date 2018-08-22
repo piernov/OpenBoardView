@@ -387,9 +387,9 @@ int main(int argc, char **argv) {
 			sleepout = 0;
 			continue;
 		} // puts OBV to sleep if nothing is happening.
-
 		// Prepare frame
 		renderer->initFrame();
+		ImGui::NewFrame();
 
 		// If we have a board to view being passed from command line, then "inject"
 		// it here.
@@ -415,6 +415,7 @@ int main(int argc, char **argv) {
 		}
 
 		// Render frame
+		ImGui::Render();
 		renderer->renderFrame(clear_color);
 	}
 
