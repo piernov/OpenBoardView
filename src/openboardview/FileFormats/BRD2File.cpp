@@ -162,7 +162,7 @@ BRD2File::BRD2File(std::vector<char> &buf) {
 
 	ENSURE(num_format == format.size());
 	ENSURE(num_nets == nets.size());
-	ENSURE(num_parts == parts.size());
+	//ENSURE(num_parts == parts.size());
 	ENSURE(num_pins == pins.size());
 	ENSURE(num_nails == nails.size());
 

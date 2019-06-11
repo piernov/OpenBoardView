@@ -12,6 +12,10 @@ void loadFileWrapper(char* path) {
 	app.LoadFile(paths);
 }
 
+void zoomWrapper(float x, float y, float factor) {
+	app.Zoom(x, y, factor);
+}
+
 extern "C" {
 /*
  * Class:     org_openboardview_openboardview_OBVActivity
@@ -28,6 +32,16 @@ JNIEXPORT void JNICALL Java_org_openboardview_openboardview_OBVActivity_openFile
 	}
 }
 
+/*
+ * Class:     org_openboardview_openboardview_OBVActivity
+ * Method:    openFileWrapper
+ * Signature: (Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_org_openboardview_openboardview_OBVActivity_onScale
+  (JNIEnv * env, jobject o, jfloat x, jfloat y, jfloat factor) {
+	
+	zoomWrapper(x, y, factor);
+}
 }
 
 const std::string show_file_picker() {
