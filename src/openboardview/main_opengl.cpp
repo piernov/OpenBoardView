@@ -365,6 +365,7 @@ int main(int argc, char **argv) {
 
 		// Prepare frame
 		renderer->initFrame();
+
 		ImGui::NewFrame();
 
 		// If we have a board to view being passed from command line, then "inject"

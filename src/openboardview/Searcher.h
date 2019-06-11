@@ -9,19 +9,19 @@ enum class SearchMode {
 class Searcher {
 	SearchMode m_searchMode = SearchMode::Sub;
 
-	SharedVector<Net> m_nets;
-	SharedVector<Component> m_parts;
+	const std::vector<Net> *m_nets;
+	const std::vector<Component> *m_parts;
 
-	template<class T> std::vector<T> searchFor(const std::string& search, std::vector<T> v,  int limit);
+	template<class T> std::vector<const T*> searchFor(const std::string& search, const std::vector<T> &v,  int limit);
 	bool strstrModeSearch(const std::string &strhaystack, const std::string &strneedle);
 public:
-	void setNets(SharedVector<Net> nets);
-	void setParts(SharedVector<Component> components);
+	void setNets(const std::vector<Net> &nets);
+	void setParts(const std::vector<Component> &components);
 
 	bool isMode(SearchMode sm);
 	void setMode(SearchMode sm);
-	SharedVector<Component> parts(const std::string& search, int limit);
-	SharedVector<Component> parts(const std::string& search);
-	SharedVector<Net> nets(const std::string& search, int limit);
-	SharedVector<Net> nets(const std::string& search);
+	std::vector<const Component*> parts(const std::string& search, int limit);
+	std::vector<const Component*> parts(const std::string& search);
+	std::vector<const Net*> nets(const std::string& search, int limit);
+	std::vector<const Net*> nets(const std::string& search);
 };

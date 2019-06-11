@@ -1,12 +1,12 @@
 #include "Searcher.h"
 #include "platform.h"
 
-void Searcher::setNets(SharedVector<Net> nets) {
-	this->m_nets = nets;
+void Searcher::setNets(const std::vector<Net> &nets) {
+	this->m_nets = &nets;
 }
 
-void Searcher::setParts(SharedVector<Component> components) {
-	this->m_parts = components;
+void Searcher::setParts(const std::vector<Component> &components) {
+	this->m_parts = &components;
 }
 
 bool Searcher::isMode(SearchMode sm) {
@@ -35,14 +35,14 @@ bool Searcher::strstrModeSearch(const std::string &strhaystack, const std::strin
 	return false;
 }
 
-template<class T> std::vector<T> Searcher::searchFor(const std::string& search, std::vector<T> v,  int limit) {
-	std::vector<T> results;
+template<class T> std::vector<const T*> Searcher::searchFor(const std::string& search, const std::vector<T> &v,  int limit) {
+	std::vector<const T*> results;
 
 	if (search.empty()) return results;
 
 	for (auto &p : v) {
-		if (strstrModeSearch(p->name, search)) {
-			results.push_back(p);
+		if (strstrModeSearch(p.name, search)) {
+			results.push_back(&p);
 			limit--;
 		}
 		if (limit == 0) return results;
@@ -50,18 +50,22 @@ template<class T> std::vector<T> Searcher::searchFor(const std::string& search, 
 	return results;
 }
 
-SharedVector<Component> Searcher::parts(const std::string& search, int limit) {
-	return searchFor(search, m_parts, limit);
+std::vector<const Component*> Searcher::parts(const std::string& search, int limit) {
+	if (!m_parts)
+		return std::vector<const Component*>{};
+	return searchFor(search, *m_parts, limit);
 }
 
-SharedVector<Component> Searcher::parts(const std::string& search) {
+std::vector<const Component*> Searcher::parts(const std::string& search) {
 	return parts(search, -1);
 }
 
-SharedVector<Net> Searcher::nets(const std::string& search, int limit) {
-	return searchFor(search, m_nets, limit);
+std::vector<const Net*> Searcher::nets(const std::string& search, int limit) {
+	if (!m_nets)
+		return std::vector<const Net*>{};
+	return searchFor(search, *m_nets, limit);
 }
 
-SharedVector<Net> Searcher::nets(const std::string& search) {
+std::vector<const Net*> Searcher::nets(const std::string& search) {
 	return nets(search, -1);
 }

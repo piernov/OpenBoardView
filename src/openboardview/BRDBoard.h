@@ -17,17 +17,17 @@ class BRDBoard : public Board {
 
 	EBoardType BoardType();
 
-	SharedVector<Net> &Nets();
-	SharedVector<Component> &Components();
-	SharedVector<Pin> &Pins();
-	SharedVector<Point> &OutlinePoints();
+	std::vector<Net> &Nets();
+	std::vector<Component> &Components();
+	std::vector<Pin> &Pins();
+	std::vector<Point> &OutlinePoints();
 
   private:
 	static const string kNetUnconnectedPrefix;
 	static const string kComponentDummyName;
 
-	SharedVector<Net> nets_;
-	SharedVector<Component> components_;
-	SharedVector<Pin> pins_;
-	SharedVector<Point> outline_;
+	std::vector<Net> nets_;
+	std::vector<Component> components_;
+	std::vector<Pin> pins_;
+	std::vector<Point> outline_;
 };

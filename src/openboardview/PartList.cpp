@@ -30,7 +30,7 @@ void PartList::Draw(const char *title, bool *p_open, Board *board) {
 		static int selected = -1;
 		string part_name    = "";
 		for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
-			part_name = parts[i]->name;
+			part_name = parts[i].name;
 
 			if (ImGui::Selectable(part_name.c_str(), selected == i, ImGuiSelectableFlags_AllowDoubleClick)) {
 				selected = i;

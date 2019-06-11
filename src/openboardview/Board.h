@@ -60,7 +60,7 @@ inline static bool contains(T &element, vector<T> &v) {
 }
 
 template <class T>
-inline void remove(T &element, vector<T> &v) {
+inline void remove(const T &element, vector<T> &v) {
 
 	auto it = std::find(v.begin(), v.end(), element);
 
@@ -78,6 +78,11 @@ struct BoardElement {
 
 	// String uniquely identifying this element on the board.
 	virtual string UniqueId() const = 0;
+
+	bool operator == (const BoardElement &b) const
+	{
+		return(this->UniqueId() == b.UniqueId());
+	}
 };
 
 // A point/position on the board relative to top left corner of the board.
@@ -102,7 +107,7 @@ struct Net : BoardElement {
 	string name;
 	bool is_ground;
 
-	SharedVector<Pin> pins;
+	std::vector<Pin> pins;
 
 	string UniqueId() const {
 		return kBoardNetPrefix + name;
@@ -124,6 +129,9 @@ struct Pin : BoardElement {
 		kPinTypeTestPad,
 	};
 
+	Pin(Net &net, Component &component) : net(&net), component(&component) {
+	}
+
 	// Type of Contact, e.g. pin, via, probe/test point.
 	EPinType type;
 
@@ -140,7 +148,7 @@ struct Pin : BoardElement {
 	Net *net;
 
 	// Contact belonging to this component (pin), nullptr if nail.
-	std::shared_ptr<Component> component;
+	Component *component;
 
 	string UniqueId() const {
 		return kBoardPinPrefix + number;
@@ -177,7 +185,7 @@ struct Component : BoardElement {
 	string mfgcode;
 
 	// Pins belonging to this component.
-	SharedVector<Pin> pins;
+	std::vector<Pin> pins;
 
 	// Post calculated outlines
 	//
@@ -221,10 +229,10 @@ class Board {
 
 	virtual ~Board() {}
 
-	virtual SharedVector<Net> &Nets()             = 0;
-	virtual SharedVector<Component> &Components() = 0;
-	virtual SharedVector<Pin> &Pins()             = 0;
-	virtual SharedVector<Point> &OutlinePoints()  = 0;
+	virtual std::vector<Net> &Nets()             = 0;
+	virtual std::vector<Component> &Components() = 0;
+	virtual std::vector<Pin> &Pins()             = 0;
+	virtual std::vector<Point> &OutlinePoints()  = 0;
 
 	EBoardType BoardType() {
 		return kBoardTypeUnknown;

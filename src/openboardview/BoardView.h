@@ -171,7 +171,7 @@ struct BoardView {
 	void HelpAbout(void);
 	void HelpControls(void);
 	template<class T> void ShowSearchResults(std::vector<T> results, char *search, int &limit, void (BoardView::*onSelect)(const char *));
-	void SearchColumnGenerate(const std::string& title, std::pair<SharedVector<Component>, SharedVector<Net>> results, char *search, int limit);
+	void SearchColumnGenerate(const std::string& title, std::pair<std::vector<const Component*>, std::vector<const Net*>> results, char *search, int limit);
 	void Preferences(void);
 	void SaveAllColors(void);
 	void ColorPreferencesItem(
@@ -207,19 +207,18 @@ struct BoardView {
 	void ShowInfoPane(void);
 
 	bool HighlightedPinIsHovered(void);
-	std::shared_ptr<Pin> m_pinHighlightedHovered    = nullptr;
-	std::shared_ptr<Pin> currentlyHoveredPin        = nullptr;
-	std::shared_ptr<Component> currentlyHoveredPart = nullptr;
+	const Pin *m_pinHighlightedHovered    = nullptr;
+	Pin *currentlyHoveredPin        = nullptr;
+	Component *currentlyHoveredPart = nullptr;
 
 	ImVec2 m_showContextMenuPos;
 
-	std::shared_ptr<Pin> m_pinSelected = nullptr;
+	Pin *m_pinSelected = nullptr;
 	//	vector<Net *> m_netHiglighted;
-	SharedVector<Pin> m_pinHighlighted;
-	SharedVector<Component> m_partHighlighted;
+	std::vector<const Pin*> m_pinHighlighted;
+	std::vector<const Component*> m_partHighlighted;
 	char m_cachedDrawList[sizeof(ImDrawList)];
 	ImVector<char> m_cachedDrawCommands;
-	SharedVector<Net> m_nets;
 	char m_search[3][128];
 	char m_netFilter[128];
 	std::string m_lastFileOpenName;
@@ -305,14 +304,14 @@ struct BoardView {
 
 	// Returns true if the part is shown on the currently displayed side of the
 	// board.
-	bool ComponentIsVisible(const std::shared_ptr<Component> part);
+	bool ComponentIsVisible(const Component &part);
 	bool IsVisibleScreen(float x, float y, float radius, const ImGuiIO &io);
 	// Returns true if the circle described by screen coordinates x, y, and radius
 	// is visible in the
 	// ImGuiIO screen rect.
 	// bool IsVisibleScreen(float x, float y, float radius = 0.0f);
 
-	bool PartIsHighlighted(const std::shared_ptr<Component> component);
+	bool PartIsHighlighted(const Component &component);
 	void FindNet(const char *net);
 	void FindNetNoClear(const char *name);
 	void FindComponent(const char *name);
@@ -321,7 +320,7 @@ struct BoardView {
 	void SearchNetNoClear(const char *net);
 	void SearchCompound(const char *item);
 	void SearchCompoundNoClear(const char *item);
-	std::pair<SharedVector<Component>, SharedVector<Net>> SearchPartsAndNets(const char *search, int limit);
+	std::pair<std::vector<const Component*>, std::vector<const Net*>> SearchPartsAndNets(const char *search, int limit);
 
 
 	void SetLastFileOpenName(const std::string &name);
