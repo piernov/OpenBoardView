@@ -10,6 +10,7 @@
 #include <climits>
 #include <memory>
 #include <cstdio>
+
 #ifdef ENABLE_SDL2
 #include <SDL.h>
 #endif
