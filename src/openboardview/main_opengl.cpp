@@ -60,6 +60,7 @@ struct globals {
 	}
 };
 
+BoardView app{};
 static SDL_Window *window      = nullptr;
 
 char help[] =
@@ -201,7 +202,6 @@ int main(int argc, char **argv) {
 	uint8_t sleepout;
 	std::string configDir;
 	globals g; // because some things we have to store *before* we load the config file in BoardView app.obvconf
-	BoardView app{};
 
 	// Log all messages
 	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
