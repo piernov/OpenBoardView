@@ -58,6 +58,7 @@ struct globals {
 	}
 };
 
+BoardView app{};
 static SDL_Window *window      = nullptr;
 
 char help[] =
@@ -197,7 +198,6 @@ int main(int argc, char **argv) {
 	uint8_t sleepout;
 	std::string configDir;
 	globals g; // because some things we have to store *before* we load the config file in BoardView app.obvconf
-	BoardView app{};
 
 	/*
 	 * Parse the parameters first up, store the results in the global struct.

@@ -145,8 +145,8 @@ const std::string show_file_picker() {
 
 	return path;
 }
-#elif !defined(__APPLE__)
-const std::string show_file_picker() { // dummy function when not building for OS X and GTK not available
+#elif !defined(__APPLE__) && !defined(__ANDROID__)
+const std::string show_file_picker() { // dummy function when not building for OS X/Android and GTK not available
 	SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Cannot show open file dialog: not built in.");
 	return std::string();
 }
@@ -186,14 +186,6 @@ const std::string get_font_path(const std::string &name) {
 #endif
 
 #ifndef __APPLE__
-// Return an environment variable value in an std::string
-const std::string get_env_var(const std::string varname) {
-	std::string envVar;
-	const char *cEnvVar = std::getenv(varname.c_str());
-	if (cEnvVar) envVar = std::string(cEnvVar); // cEnvVar may be null
-	return envVar;
-}
-
 // Return true upon successful directory creation or if path was an existing directory
 bool create_dir(const std::string &path) {
 	struct stat st;
@@ -213,6 +205,15 @@ bool create_dirs(const std::string &path) {
 		if (!create_dir(path.substr(0, pos + 1))) return false;
 	}
 	return true;
+}
+
+#ifndef __ANDROID__
+// Return an environment variable value in an std::string
+const std::string get_env_var(const std::string varname) {
+	std::string envVar;
+	const char *cEnvVar = std::getenv(varname.c_str());
+	if (cEnvVar) envVar = std::string(cEnvVar); // cEnvVar may be null
+	return envVar;
 }
 
 const std::string get_user_dir(const UserDir userdir) {
@@ -242,6 +243,7 @@ const std::string get_user_dir(const UserDir userdir) {
 	}
 	return "./"; // Something went wrong, use current dir
 }
+#endif
 #endif
 
 int path_stat(const std::string& path, path_stat_t *st) {
