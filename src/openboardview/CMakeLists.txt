@@ -132,8 +132,8 @@ elseif(APPLE)
 endif()
 
 target_link_libraries(${PROJECT_NAME_LOWER}
-	imgui
 	${GLAD_LIBRARIES}
+	imgui
 	${COCOA_LIBRARY}
 	${ZLIB_LIBRARIES}
 	${SQLITE3_LIBRARIES}
@@ -154,7 +154,7 @@ else()
 		SDL2::SDL2
 		SDL2::SDL2main
 	)
-}
+endif()
 
 if(NOT ANDROID)
 	install(TARGETS

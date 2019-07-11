@@ -15,7 +15,8 @@ android {
                 cppFlags "-std=c++11"
                 arguments "-DANDROID_STL=c++_static",
                     "-DENABLE_GL1=OFF",
-                    "-DENABLE_GL3=OFF"
+                    "-DENABLE_GL3=ON",
+                    "-DENABLE_GLES2=ON"
             }
         }
         ndk {

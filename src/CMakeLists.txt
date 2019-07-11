@@ -49,8 +49,12 @@ execute_process(
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 set(GLAD_PROFILE "compatibility" CACHE STRING "GL Profile" FORCE) # Using OpenGL Compatibility profile (for enabling use of fixed-function pipeline)
-set(GLAD_API "gl=3.2,gles2=2.0" CACHE STRING "GL versions" FORCE) # Build for OpenGL 3.0 and OpenGLES 2
-set(GLAD_EXTENSIONS "GL_EXT_texture_compression_s3tc,GL_OES_element_index_uint" CACHE STRING "Gl exts" FORCE) # S3TC used to load texture for pins — delete when removing support. The other is used by GLES2.
+if(ANDROID) #GLES2 support only
+	set(GLAD_API "gles2=2.0" CACHE STRING "GL versions" FORCE) # Build for OpenGLES 2
+else()
+	set(GLAD_API "gl=3.2,gles2=2.0" CACHE STRING "GL versions" FORCE) # Build for OpenGL 3.0 and OpenGLES 2
+endif()
+#set(GLAD_EXTENSIONS "GL_EXT_texture_compression_s3tc,GL_OES_element_index_uint" CACHE STRING "Gl exts" FORCE) # S3TC used to load texture for pins — delete when removing support. The other is used by GLES2.
 set(GLAD_NO_LOADER ON CACHE BOOL "Disable loader" FORCE) # We're using SDL2 loader
 add_subdirectory(glad)
 
@@ -62,8 +66,13 @@ if(ANDROID)
 	)
 	add_library(SDL2 SHARED IMPORTED)
 	set(SDL2_LIBRARIES "SDL2")
-	set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION
-		"${CMAKE_CURRENT_SOURCE_DIR}/android/libs/SDL2/build/intermediates/ndkBuild/release/obj/local/${ANDROID_ABI}/libSDL2.so")
+	if(CMAKE_BUILD_TYPE MATCHES DEBUG)
+		set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION
+			"${CMAKE_CURRENT_SOURCE_DIR}/android/libs/SDL2/build/intermediates/ndkBuild/debug/obj/local/${ANDROID_ABI}/libSDL2.so")
+	else()
+		set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION
+			"${CMAKE_CURRENT_SOURCE_DIR}/android/libs/SDL2/build/intermediates/ndkBuild/release/obj/local/${ANDROID_ABI}/libSDL2.so")
+	endif()
 	set(SDL2_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/SDL2/include")
 else()
 	find_package(SDL2 REQUIRED CONFIG)
@@ -83,6 +92,11 @@ add_definitions("-DIMGUI_IMPL_OPENGL_LOADER_GLAD") # We use glad
 # Configure GL3 renderer to be GLES2 compatible if GLES2 is enabled
 if(ENABLE_GLES2)
     add_definitions("-DIMGUI_IMPL_OPENGL_ES2")
+	# Apply g_DrawElemWorkaround patch for devices that don't support ImDrawIdx=unsigned int
+	execute_process(
+		COMMAND git apply ../ImGui_g_DrawElemWorkaround.patch
+		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/imgui"
+	)
 endif()
 
 # workaround for OpenGL include for OpenGL2, need to be glad rather than gl itself
@@ -90,6 +104,12 @@ file(READ "${CMAKE_CURRENT_SOURCE_DIR}/imgui/examples/imgui_impl_opengl2.cpp" in
 string(REPLACE "OpenGL/gl.h" "glad/glad.h" input "${input}")
 string(REPLACE "GL/gl.h" "glad/glad.h" input "${input}")
 file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/imgui/examples/imgui_impl_opengl2.cpp" "${input}")
+
+# workaround for OpenGLES includes, need to be glad rather than gles itself
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/imgui/examples/imgui_impl_opengl3.cpp" input)
+string(REPLACE "GLES2/gl2.h" "glad/glad.h" input "${input}")
+string(REPLACE "GLES3/gl3.h" "glad/glad.h" input "${input}")
+file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/imgui/examples/imgui_impl_opengl3.cpp" "${input}")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/imgui
 	${GLAD_INCLUDE_DIRS}
@@ -113,13 +133,25 @@ if(ENABLE_GL3)
 	)
 endif()
 
+include_directories(
+	${SDL2_INCLUDE_DIRS}
+)
 add_library(imgui STATIC ${SOURCES})
 target_link_libraries(imgui
 	${GLAD_LIBRARIES}
 )
-target_link_libraries(imgui
-	SDL2::SDL2
-)
+if(ANDROID)
+	target_link_libraries(imgui
+		${GLAD_LIBRARIES}
+		${SDL2_LIBRARIES}
+	)
+else()
+	target_link_libraries(imgui
+		SDL2::SDL2
+	)
+endif()
+
+
 
 set(IMGUI_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/imgui ${CMAKE_CURRENT_SOURCE_DIR}/imgui/examples)
 

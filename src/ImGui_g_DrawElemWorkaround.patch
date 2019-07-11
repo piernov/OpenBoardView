@@ -1,0 +1,74 @@
+diff --git a/examples/imgui_impl_opengl3.cpp b/examples/imgui_impl_opengl3.cpp
+index 364b9ccf..b718c676 100644
+--- a/examples/imgui_impl_opengl3.cpp
++++ b/examples/imgui_impl_opengl3.cpp
+@@ -109,6 +109,7 @@ static GLuint       g_ShaderHandle = 0, g_VertHandle = 0, g_FragHandle = 0;
+ static int          g_AttribLocationTex = 0, g_AttribLocationProjMtx = 0;                                // Uniforms location
+ static int          g_AttribLocationVtxPos = 0, g_AttribLocationVtxUV = 0, g_AttribLocationVtxColor = 0; // Vertex attributes location
+ static unsigned int g_VboHandle = 0, g_ElementsHandle = 0;
++static bool         g_DrawElemWorkaround = false;
+
+ // Functions
+ bool    ImGui_ImplOpenGL3_Init(const char* glsl_version)
+@@ -264,10 +265,21 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
+     {
+         const ImDrawList* cmd_list = draw_data->CmdLists[n];
+         size_t idx_buffer_offset = 0;
++		GLint vtx_buffer_offset  = 0;
+
+         // Upload vertex/index buffers
+-        glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)cmd_list->VtxBuffer.Size * sizeof(ImDrawVert), (const GLvoid*)cmd_list->VtxBuffer.Data, GL_STREAM_DRAW);
+-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx), (const GLvoid*)cmd_list->IdxBuffer.Data, GL_STREAM_DRAW);
++        if (g_DrawElemWorkaround) {
++            // WARNING: inefficient workaround for devices not supporting GL_UNSIGNED_INT
++            ImVector<ImDrawVert> vertices;
++            vertices.reserve(cmd_list->IdxBuffer.size());
++
++            for (auto &id : cmd_list->IdxBuffer) vertices.push_back(cmd_list->VtxBuffer[id]);
++
++            glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)vertices.size() * sizeof(ImDrawVert), (GLvoid *)&vertices.front(), GL_STREAM_DRAW);
++        } else {
++            glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)cmd_list->VtxBuffer.Size * sizeof(ImDrawVert), (const GLvoid*)cmd_list->VtxBuffer.Data, GL_STREAM_DRAW);
++            glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx), (const GLvoid*)cmd_list->IdxBuffer.Data, GL_STREAM_DRAW);
++        }
+
+         for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
+         {
+@@ -300,10 +312,19 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
+
+                     // Bind texture, Draw
+                     glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)pcmd->TextureId);
+-                    glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)idx_buffer_offset);
++                    if (g_DrawElemWorkaround)
++                        // WARNING: inefficient workaround for devices not supporting GL_UNSIGNED_INT
++                        glDrawArrays(GL_TRIANGLES, vtx_buffer_offset, (GLsizei)pcmd->ElemCount);
++                    else
++                        glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (void*)idx_buffer_offset);
++
+                 }
+             }
+-            idx_buffer_offset += pcmd->ElemCount * sizeof(ImDrawIdx);
++
++			if (g_DrawElemWorkaround)
++				vtx_buffer_offset += pcmd->ElemCount;
++			else
++                idx_buffer_offset += pcmd->ElemCount * sizeof(ImDrawIdx);
+         }
+     }
+
+@@ -414,6 +435,15 @@ static bool CheckProgram(GLuint handle, const char* desc)
+
+ bool    ImGui_ImplOpenGL3_CreateDeviceObjects()
+ {
++#ifdef IMGUI_IMPL_OPENGL_ES2
++    // Use deprectaed glGetString(GL_EXTENSIONS) for GLES2 only
++    const char* exts = (const char*)glGetString(GL_EXTENSIONS);
++    g_DrawElemWorkaround = (sizeof(ImDrawIdx) > sizeof(GLushort)) && strstr(exts, "GL_OES_element_index_uint") == NULL;
++
++    if (g_DrawElemWorkaround)
++        fprintf(stderr, "%s\n", "WARNING: GL_OES_element_index_uint not supported. Using glDrawArrays(). This will be slower.");
++#endif
++
+     // Backup GL state
+     GLint last_texture, last_array_buffer;
+     glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
