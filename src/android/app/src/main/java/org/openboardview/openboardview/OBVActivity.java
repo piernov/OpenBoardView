@@ -108,12 +108,16 @@ public class OBVActivity extends SDLActivity {
 
 	boolean takePersistentPerms(Uri uri) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-			getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+			try {
+				getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-			for (UriPermission up : getContentResolver().getPersistedUriPermissions()) {
-				if (up.getUri().equals(uri) && up.isReadPermission()) {
-					return true;
+				for (UriPermission up : getContentResolver().getPersistedUriPermissions()) {
+					if (up.getUri().equals(uri) && up.isReadPermission()) {
+						return true;
+					}
 				}
+			} catch (SecurityException e) {
+				Log.e(TAG, "Persistent permission error: " + e);
 			}
 			return false;
 		}
