@@ -139,9 +139,9 @@ elseif(APPLE)
 endif()
 
 target_link_libraries(${PROJECT_NAME_LOWER}
-	imgui
 	SQLite::SQLite3
 	${GLAD_LIBRARIES}
+	imgui
 	${COCOA_LIBRARY}
 	${ZLIB_LIBRARIES}
 	${FILESYSTEM_LIBRARIES}
@@ -153,7 +153,7 @@ if(NOT APPLE AND NOT MINGW AND NOT ANDROID)
 		${FONTCONFIG_LIBRARIES}
 	)
 endif()
-<<<<<<< HEAD
+
 if(MINGW)
 target_link_libraries(${PROJECT_NAME_LOWER}
 	SDL2::SDL2-static
@@ -176,8 +176,7 @@ else()
 		SDL2::SDL2
 		SDL2::SDL2main
 	)
-}
->>>>>>> e80eaff (Android projet using Gradle & CMake)
+endif()
 
 if(NOT ANDROID)
 	install(TARGETS
