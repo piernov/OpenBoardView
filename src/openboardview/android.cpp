@@ -41,6 +41,24 @@ const std::string show_file_picker() {
 	return std::string(); // We have to wait for the result, it will call the above JNI function
 }
 
+std::vector<char> file_as_buffer(const std::string &utf8_filename) {
+	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+	jclass activity = env->FindClass("org/openboardview/openboardview/OBVActivity");
+	jmethodID readFile = env->GetStaticMethodID(activity, "readFile", "(Ljava/lang/String;)[B");
+
+	jstring uris = env->NewStringUTF(utf8_filename.c_str());
+	jbyteArray jbuffer = (jbyteArray) env->CallStaticObjectMethod(activity, readFile, uris);
+
+	env->DeleteLocalRef(activity);
+
+	//convert jbyteArray to vector<char>
+	jsize len = env->GetArrayLength(jbuffer);
+	std::vector<char> fileBuffer(len);
+	env->GetByteArrayRegion(jbuffer, 0, len, (jbyte*)fileBuffer.data());
+
+	return fileBuffer; // We have to wait for the result, it will call the above JNI function
+}
+
 std::string get_asset_path(const char* asset) {
 	std::string path = "/sdcard/openboardview";
 	path += "/";
