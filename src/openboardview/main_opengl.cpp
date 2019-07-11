@@ -389,6 +389,12 @@ int main(int argc, char **argv) {
 		renderer->initFrame();
 		ImGui::NewFrame();
 
+		if (io.WantTextInput) {
+			SDL_StartTextInput();
+		} else {
+			SDL_StopTextInput();
+		}
+
 		// If we have a board to view being passed from command line, then "inject"
 		// it here.
 		if (preload_file != nullptr) {
