@@ -395,6 +395,33 @@ int main(int argc, char **argv) {
 					app.Zoom(event.mgesture.x * w, event.mgesture.y * h, event.mgesture.dDist * app.zoomFactor * 10);
 				}
 			}
+			else if( event.type == SDL_MULTIGESTURE )
+			{
+				//Inhibit dragging board area
+				app.m_dragging_token = -1;
+				//Rotation detected, at least 1°
+				if(fabs(event.mgesture.dTheta) > 3.14 / 180.0)
+				{
+					angleacc += event.mgesture.dTheta;
+					if (angleacc >= 3.14 / 2) {
+						// > 90°
+						app.Rotate(1);
+						angleacc = 0.0;
+					} else if (angleacc <= -3.14 / 2) {
+						// < 90°
+						app.Rotate(-1);
+						angleacc = 0.0;
+					}
+				}
+				//Pinch-to-zoom
+				else if(fabs(event.mgesture.dDist) > 0.002)
+				{
+					int w;
+					int h;
+					SDL_GetWindowSize(window, &w, &h);
+					app.Zoom(event.mgesture.x * w, event.mgesture.y * h, event.mgesture.dDist * app.zoomFactor * 10);
+				}
+			}
 
 			if (event.type == SDL_QUIT) done = true;
 		}
@@ -402,6 +429,14 @@ int main(int argc, char **argv) {
 		// reset rotation angle accumulator
 		if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
 			angleacc = 0.0;
+		}
+
+		// Drag to scroll
+		if (ImGui::IsMouseDragging(0)) {
+			ImVec2 delta = ImGui::GetMouseDragDelta();
+			io.MouseWheelH = delta.x / 100;
+			io.MouseWheel = delta.y / 100;
+			ImGui::ResetMouseDragDelta();
 		}
 
 		if (app.reloadConfig) {
