@@ -770,6 +770,7 @@ void BoardView::Preferences(void) {
 		ImGui::SameLine();
 		if (ImGui::InputInt("##zoomStep", &t)) {
 			obvconfig.WriteFloat("zoomFactor", t / 10);
+			zoomFactor = t / 10;
 		}
 
 		RA("Zoom modifier", DPI(200));
