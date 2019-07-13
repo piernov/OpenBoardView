@@ -349,6 +349,10 @@ int main(int argc, char **argv) {
 	 * If you find some things aren't working properly without you having to move
 	 * the mouse or 'waking up' OBV then increase to 5 or more.
 	 */
+
+
+	SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+
 	sleepout = 30;
 	float angleacc = 0.0;
 	while (!done) {
