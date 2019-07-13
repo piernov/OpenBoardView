@@ -56,6 +56,8 @@ if [ "$ARG_LENGTH" -gt 0 -a "$1" = "--recompile" -o "$2" = "--recompile" ]; then
 fi
 if [ "$CROSS" = "mingw64" ]; then
   COMPILEFLAGS="$COMPILEFLAGS -DCMAKE_TOOLCHAIN_FILE=../Toolchain-mingw64.cmake"
+elif [ "$CROSS" = "ios" ]; then
+  COMPILEFLAGS="$COMPILEFLAGS -DCMAKE_TOOLCHAIN_FILE=../Toolchain-iOS.cmake -GXcode"
 fi
 SUBSTRING=$(echo $@ | cut -d ' ' -f ${SCRIPT_ARGC}-)
 COMPILEFLAGS="$COMPILEFLAGS ${SUBSTRING}" # pass other arguments to CMAKE
