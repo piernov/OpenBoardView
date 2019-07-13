@@ -1,7 +1,13 @@
 ## COMMON ##
-option(ENABLE_GL1 "Build OpenGL 1 renderer." ON)
-option(ENABLE_GL3 "Build OpenGL 3 renderer." ON)
-option(ENABLE_GLES2 "Configure OpenGL 3 renderer to be OpenGL ES 2.0 compatible." OFF)
+if(IOS)
+	option(ENABLE_GL1 "Build OpenGL 1 renderer." OFF)
+	option(ENABLE_GL3 "Build OpenGL 3 renderer." ON)
+	option(ENABLE_GLES2 "Configure OpenGL 3 renderer to be OpenGL ES 2.0 compatible." ON)
+else()
+	option(ENABLE_GL1 "Build OpenGL 1 renderer." ON)
+	option(ENABLE_GL3 "Build OpenGL 3 renderer." ON)
+	option(ENABLE_GLES2 "Configure OpenGL 3 renderer to be OpenGL ES 2.0 compatible." OFF)
+endif()
 
 if(NOT APPLE AND NOT WIN32 OR MINGW)
 	find_package(PkgConfig REQUIRED)
@@ -49,13 +55,54 @@ execute_process(
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 set(GLAD_PROFILE "compatibility" CACHE STRING "GL Profile" FORCE) # Using OpenGL Compatibility profile (for enabling use of fixed-function pipeline)
-set(GLAD_API "gl=3.2,gles2=2.0" CACHE STRING "GL versions" FORCE) # Build for OpenGL 3.0 and OpenGLES 2
+if(IOS)
+	set(GLAD_API "gles2=2.0" CACHE STRING "GL versions" FORCE) # Build for OpenGLES 2 only on iOS
+else()
+	set(GLAD_API "gl=3.2,gles2=2.0" CACHE STRING "GL versions" FORCE) # Build for OpenGL 3.0 and OpenGLES 2
+endif()
 set(GLAD_EXTENSIONS "GL_EXT_texture_compression_s3tc,GL_OES_element_index_uint" CACHE STRING "Gl exts" FORCE) # S3TC used to load texture for pins — delete when removing support. The other is used by GLES2.
 set(GLAD_NO_LOADER ON CACHE BOOL "Disable loader" FORCE) # We're using SDL2 loader
 add_subdirectory(glad)
 
 ## SDL2 ##
-find_package(SDL2 REQUIRED CONFIG)
+if(IOS)
+	execute_process(
+		COMMAND git submodule update --init src/SDL2
+		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+	)
+
+	file(READ "${CMAKE_CURRENT_SOURCE_DIR}/SDL2/include/SDL_config_iphoneos.h" input)
+	string(REPLACE "SDL_SENSOR_COREMOTION" "SDL_SENSOR_DUMMY" input "${input}")
+	file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/SDL2/include/SDL_config_iphoneos.h" "${input}")
+
+	if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/SDL2/build-scripts/lib/libSDL2.a")
+		execute_process(
+			COMMAND "./iosbuild.sh"
+			WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/SDL2/build-scripts"
+		)
+	endif()
+
+	add_library(SDL2 SHARED IMPORTED)
+	set(SDL2_LIBRARIES "SDL2")
+	set(SDL2_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/SDL2/include")
+	set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION
+		"${CMAKE_CURRENT_SOURCE_DIR}/SDL2/build-scripts/lib/libSDL2.a")
+	target_link_libraries(SDL2 INTERFACE
+		"-framework CoreFoundation"
+		"-framework Foundation"
+		"-framework CoreGraphics"
+		"-framework CoreMotion"
+		"-framework QuartzCore"
+		"-framework UIKit"
+		"-framework AVFoundation"
+		"-framework AudioToolbox"
+		"-framework GameController"
+		"-framework OpenGLES"
+	    )
+
+else()
+	find_package(SDL2 REQUIRED CONFIG)
+endif()
 add_definitions(-DENABLE_SDL2)
 
 ## imgui ##
@@ -78,6 +125,12 @@ file(READ "${CMAKE_CURRENT_SOURCE_DIR}/imgui/examples/imgui_impl_opengl2.cpp" in
 string(REPLACE "OpenGL/gl.h" "glad/glad.h" input "${input}")
 string(REPLACE "GL/gl.h" "glad/glad.h" input "${input}")
 file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/imgui/examples/imgui_impl_opengl2.cpp" "${input}")
+
+# workaround for OpenGLES includes, need to be glad rather than gles itself
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/imgui/examples/imgui_impl_opengl3.cpp" input)
+string(REPLACE "GLES2/gl2.h" "glad/glad.h" input "${input}")
+string(REPLACE "GLES3/gl3.h" "glad/glad.h" input "${input}")
+file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/imgui/examples/imgui_impl_opengl3.cpp" "${input}")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/imgui
 	${GLAD_INCLUDE_DIRS}
@@ -105,9 +158,18 @@ add_library(imgui STATIC ${SOURCES})
 target_link_libraries(imgui
 	${GLAD_LIBRARIES}
 )
-target_link_libraries(imgui
-	SDL2::SDL2
-)
+if(IOS)
+	include_directories(
+		${SDL2_INCLUDE_DIRS}
+	)
+	target_link_libraries(imgui
+		${SDL2_LIBRARIES}
+	)
+else()
+	target_link_libraries(imgui
+		SDL2::SDL2
+	)
+endif()
 
 set(IMGUI_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/imgui ${CMAKE_CURRENT_SOURCE_DIR}/imgui/examples)
 

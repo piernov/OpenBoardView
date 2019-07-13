@@ -72,6 +72,11 @@ if(APPLE)
 #	set(LIBRARY_OUTPUT_PATH "${BUNDLE_OUTPUT_PATH}/Contents/MacOS") # We don't want to put static lib inside the bundle
 	set(INSTALL_LIBRARY_DIR "openboardview.app/Contents/MacOS")
 	set(INSTALL_BUNDLE_DIR .)
+
+	if(IOS)
+		set(MACOSX_BUNDLE_GUI_IDENTIFIER "org.openboardview.openboardview")
+		set(MACOSX_BUNDLE_BUNDLE_VERSION 0.1.0)
+	endif()
 else()
 	set(INSTALL_LIBRARY_DIR lib)
 endif()

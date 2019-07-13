@@ -12,45 +12,51 @@ endif()
 if(WIN32)
 	add_definitions(-DUNICODE)
 	add_definitions(-D_UNICODE)
+elseif(APPLE)
+	if(NOT IOS)
+		find_library(COCOA_LIBRARY Cocoa)
+		find_package(OpenGL REQUIRED)
+		set(OPENGL_INCLUDE_DIR ${OPENGL_INCLUDE_DIR}/Headers)
+	endif()
 else()
-if(APPLE)
-        find_library(COCOA_LIBRARY Cocoa)
-	find_package(OpenGL REQUIRED)
-	set(OPENGL_INCLUDE_DIR ${OPENGL_INCLUDE_DIR}/Headers)
-	else(APPLE)
-find_package(PkgConfig REQUIRED)
+	find_package(PkgConfig REQUIRED)
 
-		pkg_check_modules(FONTCONFIG REQUIRED fontconfig)
-		if(FONTCONFIG_FOUND)
-			message(STATUS "Found FontConfig version ${FONTCONFIG_VERSION}")
-			link_directories(${FONTCONFIG_LIBRARY_DIRS})
-			add_definitions(${FONTCONFIG_CFLAGS_OTHER})
-			add_definitions(-DENABLE_FONTCONFIG)
-		endif()
+	pkg_check_modules(FONTCONFIG REQUIRED fontconfig)
+	if(FONTCONFIG_FOUND)
+		message(STATUS "Found FontConfig version ${FONTCONFIG_VERSION}")
+		link_directories(${FONTCONFIG_LIBRARY_DIRS})
+		add_definitions(${FONTCONFIG_CFLAGS_OTHER})
+		add_definitions(-DENABLE_FONTCONFIG)
+	endif()
 
-		pkg_search_module(GTK REQUIRED gtk+-3.0 gtk+-2.0) # gtk2 fallback if gtk3 not found
-		if(GTK_FOUND)
-			message(STATUS "Found GTK version ${GTK_VERSION}")
-			link_directories(${GTK_LIBRARY_DIRS}) # not linked since we load it at runtime
-			add_definitions(${GTK_CFLAGS_OTHER})
-			add_definitions(-DENABLE_GTK)
-		else()
-			message(WARNING "GTK not found, file picker will be unavailable.")
-		endif()
-	endif(APPLE)
+	pkg_search_module(GTK REQUIRED gtk+-3.0 gtk+-2.0) # gtk2 fallback if gtk3 not found
+	if(GTK_FOUND)
+		message(STATUS "Found GTK version ${GTK_VERSION}")
+		link_directories(${GTK_LIBRARY_DIRS}) # not linked since we load it at runtime
+		add_definitions(${GTK_CFLAGS_OTHER})
+		add_definitions(-DENABLE_GTK)
+	else()
+		message(WARNING "GTK not found, file picker will be unavailable.")
+	endif()
 endif()
 
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/..
+	${SDL2_INCLUDE_DIRS}
 	${IMGUI_INCLUDE_DIRS}
 	${GLAD_INCLUDE_DIRS}
 	${GTK_INCLUDE_DIRS}
-	${OPENGL_INCLUDE_DIR}
 	${ZLIB_INCLUDE_DIRS}
 	${SQLITE3_INCLUDE_DIRS}
 	${FONTCONFIG_INCLUDE_DIRS}
 )
+
+if(NOT IOS)
+include_directories(
+        ${OPENGL_INCLUDE_DIR}
+)
+endif()
 
 
 set(SOURCES
@@ -94,14 +100,20 @@ if(WIN32)
 		win32.cpp
 	)
 else()
-if(APPLE)
-	set(SOURCES ${SOURCES}
-		osx.mm
-	)
-endif()
 	set(SOURCES ${SOURCES}
 		unix.cpp
 	)
+endif()
+if(APPLE)
+	if(IOS)
+		set(SOURCES ${SOURCES}
+			ios.mm
+		)
+	else()
+		set(SOURCES ${SOURCES}
+			osx.mm
+		)
+	endif()
 endif()
 
 # Must be defined in the same directory as the add_executable including the file
@@ -135,10 +147,17 @@ if(NOT APPLE AND NOT MINGW)
 		${FONTCONFIG_LIBRARIES}
 	)
 endif()
-target_link_libraries(${PROJECT_NAME_LOWER}
-	SDL2::SDL2
-	SDL2::SDL2main
-)
+
+if(IOS)
+	target_link_libraries(${PROJECT_NAME_LOWER}
+		${SDL2_LIBRARIES}
+	)
+else()
+	target_link_libraries(${PROJECT_NAME_LOWER}
+		SDL2::SDL2
+		SDL2::SDL2main
+	)
+endif()
 
 install(TARGETS
 	${PROJECT_NAME_LOWER}
