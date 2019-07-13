@@ -7,7 +7,11 @@ std::string ImGuiRendererSDLGL3::name() {
 }
 
 bool ImGuiRendererSDLGL3::checkGLVersion() {
-#if __APPLE__
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+	if (GLVersion.major <= 2 && GLVersion.minor < 0) {
+#elif defined(IMGUI_IMPL_OPENGL_ES3)
+	if (GLVersion.major <= 3 && GLVersion.minor < 0) {
+#elif __APPLE__
 	if (GLVersion.major <= 3 && GLVersion.minor < 2) {
 #else
 	if (GLVersion.major <= 3 && GLVersion.minor < 0) {
@@ -33,7 +37,8 @@ void ImGuiRendererSDLGL3::setGLVersion() {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#elif __APPLE__
+#else
+#if __APPLE__
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
 #else
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
@@ -43,6 +48,7 @@ void ImGuiRendererSDLGL3::setGLVersion() {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+#endif
 }
 
 bool ImGuiRendererSDLGL3::init() {
