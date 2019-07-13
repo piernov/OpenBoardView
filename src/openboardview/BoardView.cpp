@@ -2362,7 +2362,7 @@ void BoardView::HandleInput() {
 				m_draggingLastFrame = true;
 				m_needsRedraw       = true;
 			}
-		} else if (m_dragging_token >= 0) {
+		} else if (m_dragging_token >= 0) { // m_dragging_token == -1 to prevent deselection when doing touch gesture
 			m_dragging_token = 0;
 
 			if (m_lastFileOpenWasInvalid == false) {
