@@ -21,3 +21,6 @@
 [submodule "src/SDL2"]
 	path = src/SDL2
 	url = https://github.com/spurious/SDL-mirror
+[submodule "src/ImFileDialog"]
+	path = src/ImFileDialog
+	url = https://github.com/dfranx/ImFileDialog.git
