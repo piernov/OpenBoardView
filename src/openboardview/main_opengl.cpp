@@ -201,7 +201,6 @@ int main(int argc, char **argv) {
 	uint8_t sleepout;
 	std::string configDir;
 	globals g; // because some things we have to store *before* we load the config file in BoardView app.obvconf
-	BoardView app{};
 
 	// Log all messages
 	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
@@ -215,7 +214,15 @@ int main(int argc, char **argv) {
 	 */
 	parse_parameters(argc, argv, &g);
 
-	app.debug = g.debug;
+	// Load the configuration file
+	configDir = get_user_dir(UserDir::Config);
+	Confparse obvconfig{};
+	// If we've chosen to override the normally found config.
+	if (g.config_file) {
+		obvconfig.Load(g.config_file, true);
+	} else if (!configDir.empty()) {
+		obvconfig.Load(configDir + "obv.conf", true);
+	}
 
 	// Setup SDL
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
@@ -223,28 +230,8 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-	// Load the configuration file
-	configDir = get_user_dir(UserDir::Config);
-	if (!configDir.empty()) app.obvconfig.Load(configDir + "obv.conf", true);
-
-	// Load file history
-	std::string dataDir = get_user_dir(UserDir::Data);
-	if (!dataDir.empty()) {
-		app.fhistory.Set_filename(dataDir + "obv.history");
-		app.fhistory.Load();
-	}
-
-	// If we've chosen to override the normally found config.
-	if (g.config_file) app.obvconfig.Load(g.config_file, true);
-
-	// Apply the slowCPU flag if required.
-	app.slowCPU = g.slowCPU;
-
-	if (g.width == 0) g.width   = app.obvconfig.ParseInt("windowX", 1100);
-	if (g.height == 0) g.height = app.obvconfig.ParseInt("windowY", 700);
-
 	if (g.renderer == Renderers::Renderer::DEFAULT) {
-		g.renderer = Renderers::get(app.obvconfig.ParseInt("renderer", static_cast<int>(Renderers::Preferred)));
+		g.renderer = Renderers::get(obvconfig.ParseInt("renderer", static_cast<int>(Renderers::Preferred)));
 	}
 
 	// Setup window
@@ -275,6 +262,23 @@ int main(int argc, char **argv) {
 	io.IniFilename = NULL;
 	//	io.Fonts->AddFontDefault();
 
+	// Create user interface
+	BoardView app{obvconfig, *Renderers::current};
+	app.debug = g.debug;
+
+	// Load file history
+	std::string dataDir = get_user_dir(UserDir::Data);
+	if (!dataDir.empty()) {
+		app.fhistory.Set_filename(dataDir + "obv.history");
+		app.fhistory.Load();
+	}
+
+	// Apply the slowCPU flag if required.
+	app.slowCPU = g.slowCPU;
+
+	if (g.width == 0) g.width   = obvconfig.ParseInt("windowX", 1100);
+	if (g.height == 0) g.height = obvconfig.ParseInt("windowY", 700);
+
 	// Main loop
 	bool done             = false;
 	bool preload_required = false;
@@ -291,7 +295,7 @@ int main(int argc, char **argv) {
 	app.m_board_surface.y = g.height;
 	if (app.showInfoPanel) app.m_board_surface.x -= app.m_info_surface.x;
 
-	if (g.font_size == 0.0f) g.font_size = app.obvconfig.ParseDouble("fontSize", 20.0f);
+	if (g.font_size == 0.0f) g.font_size = obvconfig.ParseDouble("fontSize", 20.0f);
 	g.font_size                          = (g.font_size * app.dpi) / 100;
 
 	{
@@ -302,12 +306,12 @@ int main(int argc, char **argv) {
 	// Font selection
 	std::deque<std::string> fontList(
 	    {"Liberation Sans", "DejaVu Sans", "Arial", "Helvetica", ""}); // Empty string = use system default font
-	std::string customFont(app.obvconfig.ParseStr("fontName", ""));
+	std::string customFont(obvconfig.ParseStr("fontName", ""));
 
 	if (!customFont.empty()) fontList.push_front(customFont);
 
 	for (const auto &name : fontList) {
-		app.obvconfig.WriteStr("fontName", name.c_str());
+		obvconfig.WriteStr("fontName", name.c_str());
 #ifdef _WIN32
 		ImFontConfig font_cfg{};
 		font_cfg.FontDataOwnedByAtlas = false;
@@ -369,7 +373,7 @@ int main(int argc, char **argv) {
 
 		if (app.reloadConfig) {
 			app.reloadConfig = false;
-			app.obvconfig.Load(configDir + "obv.conf");
+			obvconfig.Load(configDir + "obv.conf");
 			app.ConfigParse();
 			clear_color = ImColor(app.m_colors.backgroundColor);
 		}

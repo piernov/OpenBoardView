@@ -121,7 +121,7 @@ struct BoardView {
 	Board *m_board;
 	BackgroundImage backgroundImage{m_current_side};
 
-	Confparse obvconfig;
+	Confparse &obvconfig;
 	FHistory fhistory;
 	Searcher searcher;
 	SpellCorrector scnets;
@@ -290,6 +290,7 @@ struct BoardView {
 	bool m_validBoard = false;
 	bool m_wantsQuit;
 
+	BoardView(Confparse &obvconfig, ImGuiRendererSDL &renderer);
 	~BoardView();
 
 	void ShowNetList(bool *p_open);

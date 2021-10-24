@@ -28,6 +28,8 @@
 #include "annotations.h"
 #include "imgui/imgui.h"
 
+#include "ImFileDialog.h"
+
 #include "NetList.h"
 #include "PartList.h"
 #include "vectorhulls.h"
@@ -42,6 +44,12 @@ using namespace std::placeholders;
 #ifndef _WIN32
 #define stricmp strcasecmp
 #endif
+
+BoardView::BoardView(Confparse &obvconfig, ImGuiRendererSDL &renderer) : obvconfig(obvconfig) {
+	// ImFileDialog texture bindings
+	ifd::FileDialog::Instance().CreateTexture = std::bind(&ImGuiRendererSDL::createTexture, &renderer, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+	ifd::FileDialog::Instance().DeleteTexture = std::bind(&ImGuiRendererSDL::deleteTexture, &renderer, std::placeholders::_1);
+}
 
 BoardView::~BoardView() {
 	if (m_validBoard) {
