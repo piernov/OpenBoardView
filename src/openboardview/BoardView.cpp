@@ -1984,34 +1984,6 @@ void BoardView::Update() {
 			ImGui::EndMenu();
 		}
 
-		ImGui::SameLine();
-		ImGui::Dummy(ImVec2(DPI(10), 1));
-		ImGui::SameLine();
-		if (ImGui::Checkbox("Annotations", &showAnnotations)) {
-			obvconfig.WriteBool("showAnnotations", showAnnotations);
-			m_needsRedraw = true;
-		}
-
-		ImGui::SameLine();
-		if (ImGui::Checkbox("Netweb", &showNetWeb)) {
-			obvconfig.WriteBool("showNetWeb", showNetWeb);
-			m_needsRedraw = true;
-		}
-
-		ImGui::SameLine();
-		{
-			if (ImGui::Checkbox("Pins", &showPins)) {
-				obvconfig.WriteBool("showPins", showPins);
-				m_needsRedraw = true;
-			}
-		}
-
-		ImGui::SameLine();
-		if (ImGui::Checkbox("Image", &backgroundImage.enabled)) {
-			obvconfig.WriteBool("showBackgroundImage", backgroundImage.enabled);
-			m_needsRedraw = true;
-		}
-
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
 
 		ImGui::SameLine();
