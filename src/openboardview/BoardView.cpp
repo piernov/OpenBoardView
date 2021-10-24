@@ -428,6 +428,8 @@ int BoardView::LoadFile(const filesystem::path &filepath) {
 			// delete m_board;
 		}
 
+		SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Loading file: %s", filepath.string().c_str());
+
 		SetLastFileOpenName(filepath.string());
 		std::vector<char> buffer = file_as_buffer(filepath);
 		if (!buffer.empty()) {
@@ -480,7 +482,7 @@ int BoardView::LoadFile(const filesystem::path &filepath) {
 				CenterView();
 				m_lastFileOpenWasInvalid = false;
 				m_validBoard             = true;
-
+				SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Loaded file: %s", filepath.string().c_str());
 			} else {
 				m_validBoard = false;
 				delete file;
