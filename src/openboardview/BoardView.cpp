@@ -2120,6 +2120,14 @@ void BoardView::Update() {
 		}
 	}
 
+	// If show_file_picker uses ImFileDialog
+	if (ifd::FileDialog::Instance().IsDone("FileOpenDialog")) {
+		if (ifd::FileDialog::Instance().HasResult()) {
+			LoadFile(ifd::FileDialog::Instance().GetResult().u8string());
+		}
+		ifd::FileDialog::Instance().Close();
+	}
+
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
 	                         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings;
 
