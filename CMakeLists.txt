@@ -81,7 +81,7 @@ if(APPLE)
 
 	if(IOS)
 		set(MACOSX_BUNDLE_GUI_IDENTIFIER "org.openboardview.openboardview")
-		set(MACOSX_BUNDLE_BUNDLE_VERSION 0.1.0)
+		set(MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION})
 	endif()
 else()
 	set(INSTALL_LIBRARY_DIR lib)
