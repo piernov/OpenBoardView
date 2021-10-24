@@ -140,6 +140,9 @@ if(MINGW) # Dirty fix to force linking all libs (esp. libstdc++) statically for 
 	set_target_properties(${PROJECT_NAME_LOWER} PROPERTIES LINK_SEARCH_END_STATIC 1)
 elseif(APPLE)
 	set_target_properties(${PROJECT_NAME_LOWER} PROPERTIES MACOSX_BUNDLE_ICON_FILE ${PROJECT_NAME_LOWER})
+	if(IOS)
+		set_target_properties(${PROJECT_NAME_LOWER} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${PROJECT_SOURCE_DIR}/MacOSXBundleInfo.plist.in)
+	endif()
 endif()
 
 target_link_libraries(${PROJECT_NAME_LOWER}
@@ -167,9 +170,11 @@ target_link_libraries(${PROJECT_NAME_LOWER}
 	SDL2::SDL2
 )
 endif()
-target_link_libraries(${PROJECT_NAME_LOWER}
-	SDL2::SDL2main
-)
+if(NOT IOS)
+	target_link_libraries(${PROJECT_NAME_LOWER}
+		SDL2::SDL2main
+	)
+endif()
 
 install(TARGETS
 	${PROJECT_NAME_LOWER}
