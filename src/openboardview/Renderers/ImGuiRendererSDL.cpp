@@ -41,7 +41,11 @@ bool ImGuiRendererSDL::init() {
 		return false;
 	}
 
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+	if (!gladLoadGLES2Loader(SDL_GL_GetProcAddress)) {
+#else
 	if (!gladLoadGLLoader(SDL_GL_GetProcAddress)) {
+#endif
 		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s: glad failed to load OpenGL\n", this->name().c_str());
 		return false;
 	}

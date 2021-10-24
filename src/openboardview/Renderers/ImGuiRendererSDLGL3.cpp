@@ -7,8 +7,17 @@ std::string ImGuiRendererSDLGL3::name() {
 }
 
 bool ImGuiRendererSDLGL3::checkGLVersion() {
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+	if (GLVersion.major < 2) {
+		SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Minimal OpenGL ES version required is %d.%d. Got %d.%d.", 2, 0, GLVersion.major, GLVersion.minor);
+#elif defined(IMGUI_IMPL_OPENGL_ES3)
+	if (GLVersion.major < 3) {
+		SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Minimal OpenGL ES version required is %d.%d. Got %d.%d.", 3, 0, GLVersion.major, GLVersion.minor);
+#else
 	if (GLVersion.major < 3 || (GLVersion.major == 3 && GLVersion.minor < 2)) {
 		SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Minimal OpenGL version required is %d.%d. Got %d.%d.", 3, 2, GLVersion.major, GLVersion.minor);
+
+#endif
 		return false;
 	}
 	return true;
@@ -29,16 +38,18 @@ void ImGuiRendererSDLGL3::setGLVersion() {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#elif __APPLE__
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
 #else
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-#endif
 	// GL 3.2 Core + GLSL 150
 	glsl_version = "#version 150";
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+#endif
+#if __APPLE__
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
+#else
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+#endif
 }
 
 bool ImGuiRendererSDLGL3::init() {
