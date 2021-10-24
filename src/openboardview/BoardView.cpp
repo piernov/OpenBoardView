@@ -2233,6 +2233,10 @@ void BoardView::Update() {
 	if (!showInfoPanel) {
 		m_board_surface = ImVec2(io.DisplaySize.x, io.DisplaySize.y - (m_status_height + m_menu_height));
 	} else {
+		if (m_info_surface.x > io.DisplaySize.x / 3) {
+			// Max size of info panel is a third of display size as written in the drag routine. Default value could be higher so cap it here.
+			m_info_surface.x = io.DisplaySize.x / 3;
+		}
 		m_board_surface = ImVec2(io.DisplaySize.x - m_info_surface.x, io.DisplaySize.y - (m_status_height + m_menu_height));
 	}
 	/*
