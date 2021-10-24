@@ -2012,19 +2012,21 @@ void BoardView::Update() {
 			m_needsRedraw = true;
 		}
 
-		ImGui::SameLine();
-		ImGui::Dummy(ImVec2(DPI(40), 1));
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
 
 		ImGui::SameLine();
-		if (ImGui::Button(" - ")) {
+		ImGui::Dummy(ImVec2(DPI(2), 1));
+		ImGui::SameLine();
+		if (ImGui::Button("--")) {
 			Zoom(m_board_surface.x / 2, m_board_surface.y / 2, -zoomFactor);
 		}
 		ImGui::SameLine();
-		if (ImGui::Button(" + ")) {
+		if (ImGui::Button("++")) {
 			Zoom(m_board_surface.x / 2, m_board_surface.y / 2, zoomFactor);
 		}
+
 		ImGui::SameLine();
-		ImGui::Dummy(ImVec2(DPI(20), 1));
+		ImGui::Dummy(ImVec2(DPI(2), 1));
 		ImGui::SameLine();
 		if (ImGui::Button("-")) {
 			Zoom(m_board_surface.x / 2, m_board_surface.y / 2, -zoomFactor / zoomModifier);
@@ -2035,31 +2037,32 @@ void BoardView::Update() {
 		}
 
 		ImGui::SameLine();
-		ImGui::Dummy(ImVec2(DPI(20), 1));
+		ImGui::Dummy(ImVec2(DPI(2), 1));
 		ImGui::SameLine();
-		if (ImGui::Button(" < ")) {
+		if (ImGui::Button("<")) {
 			Rotate(-1);
 		}
-
 		ImGui::SameLine();
-		if (ImGui::Button(" ^ ")) {
+		if (ImGui::Button("^")) {
 			FlipBoard();
 		}
-
 		ImGui::SameLine();
-		if (ImGui::Button(" > ")) {
+		if (ImGui::Button(">")) {
 			Rotate(1);
 		}
-
 		ImGui::SameLine();
 		if (ImGui::Button("X")) {
 			CenterView();
 		}
 
 		ImGui::SameLine();
+		ImGui::Dummy(ImVec2(DPI(2), 1));
+		ImGui::SameLine();
 		if (ImGui::Button("CLEAR")) {
 			ClearAllHighlights();
 		}
+
+		ImGui::PopStyleVar();
 
 		/*
 		ImGui::SameLine();
