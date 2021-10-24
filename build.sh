@@ -57,7 +57,7 @@ fi
 if [ "$CROSS" = "mingw64" ]; then
   COMPILEFLAGS="$COMPILEFLAGS -DCMAKE_TOOLCHAIN_FILE=../Toolchain-mingw64.cmake"
 elif [ "$CROSS" = "ios" ]; then
-  COMPILEFLAGS="$COMPILEFLAGS -DCMAKE_TOOLCHAIN_FILE=../Toolchain-iOS.cmake -GXcode"
+  COMPILEFLAGS="$COMPILEFLAGS -DCMAKE_TOOLCHAIN_FILE=../ios.toolchain.cmake -DPLATFORM=OS64 -DENABLE_BITCODE=0 -GXcode"
 fi
 SUBSTRING=$(echo $@ | cut -d ' ' -f ${SCRIPT_ARGC}-)
 COMPILEFLAGS="$COMPILEFLAGS ${SUBSTRING}" # pass other arguments to CMAKE
