@@ -147,3 +147,8 @@ std::string ImGuiRendererSDL::loadTextureFromFile(const filesystem::path &filepa
 
 	return {};
 }
+
+void ImGuiRendererSDL::deleteTexture(void* tex) {
+	GLuint texID = (size_t)tex;
+	glDeleteTextures(1, &texID);
+}

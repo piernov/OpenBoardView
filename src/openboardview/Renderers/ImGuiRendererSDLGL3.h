@@ -13,6 +13,7 @@ public:
 	void initFrame();
 	void renderDrawData();
 	void shutdown();
+	void *createTexture(uint8_t* data, int w, int h, char fmt);
 private:
 	std::string glsl_version;
 };
