@@ -60,7 +60,7 @@ if(IOS)
 else()
 	set(GLAD_API "gl=3.2,gles2=2.0" CACHE STRING "GL versions" FORCE) # Build for OpenGL 3.0 and OpenGLES 2
 endif()
-set(GLAD_EXTENSIONS "GL_EXT_texture_compression_s3tc,GL_OES_element_index_uint" CACHE STRING "Gl exts" FORCE) # S3TC used to load texture for pins — delete when removing support. The other is used by GLES2.
+set(GLAD_EXTENSIONS "GL_OES_element_index_uint,GL_EXT_texture_format_BGRA8888" CACHE STRING "Gl exts" FORCE) # For GLES2
 set(GLAD_NO_LOADER ON CACHE BOOL "Disable loader" FORCE) # We're using SDL2 loader
 add_subdirectory(glad)
 
@@ -82,12 +82,11 @@ if(IOS)
 		)
 	endif()
 
-	add_library(SDL2 SHARED IMPORTED)
-	set(SDL2_LIBRARIES "SDL2")
-	set(SDL2_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/SDL2/include")
-	set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION
-		"${CMAKE_CURRENT_SOURCE_DIR}/SDL2/build-scripts/lib/libSDL2.a")
-	target_link_libraries(SDL2 INTERFACE
+	add_library(SDL2::SDL2 SHARED IMPORTED)
+	set_target_properties(SDL2::SDL2 PROPERTIES
+		IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/SDL2/build-scripts/lib/libSDL2.a"
+		INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/SDL2/include")
+	target_link_libraries(SDL2::SDL2 INTERFACE
 		"-framework CoreFoundation"
 		"-framework Foundation"
 		"-framework CoreGraphics"
@@ -102,22 +101,22 @@ if(IOS)
 
 else()
 	find_package(SDL2 REQUIRED CONFIG)
+
+	# Create namespace targets for system with SDL2 older than 2.0.12
+	if(NOT TARGET SDL2::SDL2)
+		add_library(SDL2::SDL2 SHARED IMPORTED)
+		find_library(SDL2_LIBRARY SDL2)
+		set_target_properties(SDL2::SDL2 PROPERTIES
+			IMPORTED_LOCATION ${SDL2_LIBRARY}
+			INTERFACE_INCLUDE_DIRECTORIES ${SDL2_INCLUDE_DIRS})
+		add_library(SDL2::SDL2main STATIC IMPORTED)
+		find_library(SDL2MAIN_LIBRARY SDL2main)
+		set_target_properties(SDL2::SDL2main PROPERTIES
+			IMPORTED_LOCATION ${SDL2MAIN_LIBRARY}
+			INTERFACE_INCLUDE_DIRECTORIES ${SDL2_INCLUDE_DIRS})
+	endif()
 endif()
 add_definitions(-DENABLE_SDL2)
-
-# Create namespace targets for system with SDL2 older than 2.0.12
-if(NOT TARGET SDL2::SDL2)
-       add_library(SDL2::SDL2 SHARED IMPORTED)
-       find_library(SDL2_LIBRARY SDL2)
-       set_target_properties(SDL2::SDL2 PROPERTIES
-               IMPORTED_LOCATION ${SDL2_LIBRARY}
-               INTERFACE_INCLUDE_DIRECTORIES ${SDL2_INCLUDE_DIRS})
-       add_library(SDL2::SDL2main STATIC IMPORTED)
-       find_library(SDL2MAIN_LIBRARY SDL2main)
-       set_target_properties(SDL2::SDL2main PROPERTIES
-               IMPORTED_LOCATION ${SDL2MAIN_LIBRARY}
-               INTERFACE_INCLUDE_DIRECTORIES ${SDL2_INCLUDE_DIRS})
-endif()
 
 ## imgui ##
 # note: in the future there may be integrated CMake support into imgui
