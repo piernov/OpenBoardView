@@ -224,6 +224,30 @@ execute_process(
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/stb)
+if(IOS)
+add_definitions(-DSTBI_NO_THREAD_LOCALS)
+endif()
+
+## ImFileDialog ##
+#execute_process(
+#	COMMAND git submodule update --init third_party/ImFileDialog
+#	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+#)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ImFileDialog)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}) # ImGui include path issue in ImFileDialog.cpp
+
+
+set(SOURCES
+	ImFileDialog/ImFileDialog.cpp)
+
+add_library(ImFileDialog STATIC ${SOURCES})
+target_link_libraries(ImFileDialog
+	imgui
+	${FILESYSTEM_LIBRARIES}
+)
+
+set(IMFILEDIALOG_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/ImFileDialog)
 
 ## OpenBoardView ##
 add_subdirectory(openboardview)
