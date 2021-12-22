@@ -12,3 +12,6 @@
 	path = src/imgui
 	url = https://github.com/ocornut/imgui
 	branch = master
+[submodule "src/toml11"]
+	path = src/toml11
+	url = https://github.com/ToruNiina/toml11.git

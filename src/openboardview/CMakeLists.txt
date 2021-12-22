@@ -75,6 +75,8 @@ set(SOURCES
 	Renderers/ImGuiRendererSDL.cpp
 	Searcher.cpp
 	SpellCorrector.cpp
+	UI/KeyBinding.cpp
+	UI/KeyBindings.cpp
 	main_opengl.cpp
 )
 
@@ -127,6 +129,7 @@ target_link_libraries(${PROJECT_NAME_LOWER}
 	${COCOA_LIBRARY}
 	${ZLIB_LIBRARIES}
 	${SQLITE3_LIBRARIES}
+	toml11::toml11
 	${CMAKE_DL_LIBS}
 )
 

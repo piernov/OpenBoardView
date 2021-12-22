@@ -62,10 +62,10 @@ add_definitions(-DENABLE_SDL2)
 # note: in the future there may be integrated CMake support into imgui
 # see: https://github.com/ocornut/imgui/pull/1713
 # for now do it manually, after glad and SDL2 because we use the includes for the sdl_opengl examples
-execute_process(
-	COMMAND git submodule update --init src/imgui
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-)
+#execute_process(
+#	COMMAND git submodule update --init src/imgui
+#	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+#)
 add_definitions("-DImDrawIdx=unsigned int") # short is not enough for us
 add_definitions("-DIMGUI_IMPL_OPENGL_LOADER_GLAD") # We use glad
 # Configure GL3 renderer to be GLES2 compatible if GLES2 is enabled
@@ -113,6 +113,17 @@ set(IMGUI_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/imgui ${CMAKE_CURRENT_SOURCE_
 
 
 #install(TARGETS imgui DESTINATION ${INSTALL_ARCHIVE_DIR}) # No need to install a static lib
+
+
+## toml11 ##
+#execute_process(
+#	COMMAND git submodule update --init src/toml11
+#	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+#)
+set(toml11_BUILD_TEST OFF CACHE BOOL "Build toml tests" FORCE) # We're using SDL2 loader
+
+add_subdirectory(toml11 EXCLUDE_FROM_ALL)
+
 
 ## OpenBoardView ##
 add_subdirectory(openboardview)

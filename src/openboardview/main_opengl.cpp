@@ -349,6 +349,11 @@ int main(int argc, char **argv) {
 	 * If you find some things aren't working properly without you having to move
 	 * the mouse or 'waking up' OBV then increase to 5 or more.
 	 */
+
+	float ddpi, hdpi, vdpi;
+	int ret = SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi);
+	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "DPI: %f %f %f\n", ddpi, hdpi, vdpi);
+
 	sleepout = 30;
 	while (!done) {
 
@@ -367,6 +372,13 @@ int main(int argc, char **argv) {
 			}
 
 			if (event.type == SDL_QUIT) done = true;
+		}
+
+		if (ImGui::IsMouseDragging(0)) {
+			ImVec2 delta = ImGui::GetMouseDragDelta();
+			io.MouseWheelH = delta.x / 100;
+			io.MouseWheel = delta.y / 100;
+			ImGui::ResetMouseDragDelta();
 		}
 
 		if (app.reloadConfig) {
