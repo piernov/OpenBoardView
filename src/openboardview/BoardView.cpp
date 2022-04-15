@@ -2282,6 +2282,8 @@ void BoardView::Update() {
 
 	ImGui::PopStyleVar();
 
+	HandlePDFBridgeSelection();
+
 } // main menu bar
 
 void BoardView::Zoom(float osd_x, float osd_y, float zoom) {
@@ -4525,6 +4527,19 @@ void BoardView::FlipBoard(int mode) {
 		}
 	}
 	m_needsRedraw = true;
+}
+
+void BoardView::HandlePDFBridgeSelection() {
+	if (pdfBridge.HasNewSelection()) {
+		auto selection = pdfBridge.GetSelection();
+		if (selection.empty()) {
+			m_pinHighlighted.clear();
+			m_partHighlighted.clear();
+		} else {
+			SearchCompound(selection.c_str());
+			CenterZoomSearchResults();
+		}
+	};
 }
 
 BitVec::~BitVec() {
