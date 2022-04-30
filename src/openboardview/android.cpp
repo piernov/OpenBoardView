@@ -76,7 +76,7 @@ const std::string get_font_path(const std::string &name) {
 const std::string get_user_dir(const UserDir userdir) {
 	std::string path;
 	auto extState = SDL_AndroidGetExternalStorageState();
-	if (extState == SDL_ANDROID_EXTERNAL_STORAGE_WRITE)
+	if (extState & SDL_ANDROID_EXTERNAL_STORAGE_WRITE)
 		path = std::string(SDL_AndroidGetExternalStoragePath());
 	else
 		path = std::string(SDL_AndroidGetInternalStoragePath());
