@@ -1,13 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
-    buildToolsVersion "28.0.3"
+    compileSdkVersion 32
+    buildToolsVersion "32.0.0"
+    ndkVersion "24.0.8215888"
 
     defaultConfig {
         applicationId "org.openboardview.openboardview"
         minSdkVersion 16
-        targetSdkVersion 26
+        targetSdkVersion 32
         versionCode 1
         versionName "R7.4-pre1"
         externalNativeBuild {
@@ -25,11 +26,14 @@ android {
     }
     externalNativeBuild {
         cmake {
+            version "3.18.1"
             path "../../../CMakeLists.txt"
         }
     }
     lintOptions {
         disable "NewApi"
+	// Ignore errors about SDL2 Bluetooth HID not checking for permissions
+        abortOnError false
     }
 
 }
