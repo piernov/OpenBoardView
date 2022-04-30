@@ -20,5 +20,5 @@
 	url = https://github.com/gulrak/filesystem.git
 [submodule "src/SDL2"]
 	path = src/SDL2
-	url = https://github.com/spurious/SDL-mirror
+	url = https://github.com/libsdl-org/SDL.git
 	branch = release-2.0.5
