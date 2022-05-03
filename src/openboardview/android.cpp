@@ -30,7 +30,7 @@ JNIEXPORT void JNICALL Java_org_openboardview_openboardview_OBVActivity_openFile
 
 }
 
-const std::string show_file_picker() {
+const filesystem::path show_file_picker(bool filterBoards) {
 	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
 	jclass activity = env->FindClass("org/openboardview/openboardview/OBVActivity");
 	jmethodID openFilePicker= env->GetStaticMethodID(activity, "openFilePicker", "()V");
@@ -38,25 +38,44 @@ const std::string show_file_picker() {
 	env->CallStaticVoidMethod(activity, openFilePicker);
 
 	env->DeleteLocalRef(activity);
-	return std::string(); // We have to wait for the result, it will call the above JNI function
+	return {}; // We have to wait for the result, it will call the above JNI function
 }
 
-std::vector<char> file_as_buffer(const std::string &utf8_filename) {
+std::vector<char> file_as_buffer(const filesystem::path &filepath, std::string &error_msg) {
 	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
 	jclass activity = env->FindClass("org/openboardview/openboardview/OBVActivity");
 	jmethodID readFile = env->GetStaticMethodID(activity, "readFile", "(Ljava/lang/String;)[B");
 
-	jstring uris = env->NewStringUTF(utf8_filename.c_str());
-	jbyteArray jbuffer = (jbyteArray) env->CallStaticObjectMethod(activity, readFile, uris);
+	jstring uris = env->NewStringUTF(filepath.string().c_str());
+	jbyteArray jbuffer = reinterpret_cast<jbyteArray>(env->CallStaticObjectMethod(activity, readFile, uris));
 
 	env->DeleteLocalRef(activity);
+
+	// Catch any exception that occured in Java calls to report error message
+	if(env->ExceptionCheck()) {
+		jthrowable e = env->ExceptionOccurred();
+		env->ExceptionDescribe(); // writes to logcat
+		env->ExceptionClear();
+
+		jclass clazz = env->GetObjectClass(e);
+		jmethodID getMessage = env->GetMethodID(clazz, "getMessage", "()Ljava/lang/String;");
+		jstring message = reinterpret_cast<jstring>(env->CallObjectMethod(e, getMessage));
+		const char *mstr = env->GetStringUTFChars(message, NULL);
+		error_msg = mstr;
+		env->ReleaseStringUTFChars(message, mstr);
+		env->DeleteLocalRef(message);
+		env->DeleteLocalRef(clazz);
+		env->DeleteLocalRef(e);
+
+		return {};
+	}
 
 	//convert jbyteArray to vector<char>
 	jsize len = env->GetArrayLength(jbuffer);
 	std::vector<char> fileBuffer(len);
 	env->GetByteArrayRegion(jbuffer, 0, len, (jbyte*)fileBuffer.data());
 
-	return fileBuffer; // We have to wait for the result, it will call the above JNI function
+	return fileBuffer;
 }
 
 std::string get_asset_path(const char* asset) {
