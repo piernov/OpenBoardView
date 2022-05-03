@@ -64,16 +64,21 @@ if(ANDROID)
 		COMMAND git submodule update --init src/SDL2
 		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 	)
-	add_library(SDL2 SHARED IMPORTED)
-	set(SDL2_LIBRARIES "SDL2")
+
+	add_library(SDL2::SDL2 STATIC IMPORTED)
+	#string(TOLOWER ${CMAKE_BUILD_TYPE} ANDROID_BUILD_TYPE)
 	if(CMAKE_BUILD_TYPE MATCHES DEBUG)
-		set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION
-			"${CMAKE_CURRENT_SOURCE_DIR}/android/libs/SDL2/build/intermediates/ndkBuild/debug/obj/local/${ANDROID_ABI}/libSDL2.so")
+			set_target_properties(SDL2::SDL2 PROPERTIES
+					IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/android/libs/SDL2/build/intermediates/ndkBuild/debug/obj/local/${ANDROID_ABI}/libSDL2.so",
+					INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/SDL2/include")
 	else()
-		set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION
-			"${CMAKE_CURRENT_SOURCE_DIR}/android/libs/SDL2/build/intermediates/ndkBuild/release/obj/local/${ANDROID_ABI}/libSDL2.so")
+			set_target_properties(SDL2::SDL2 PROPERTIES
+					IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/android/libs/SDL2/build/intermediates/ndkBuild/release/obj/local/${ANDROID_ABI}/libSDL2.so"
+					INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/SDL2/include")
 	endif()
-	set(SDL2_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/SDL2/include")
+
+	add_library(SDL2main STATIC "${CMAKE_CURRENT_SOURCE_DIR}/SDL2/src/main/android/SDL_android_main.c")
+	add_library(SDL2::SDL2main ALIAS SDL2main)
 else()
 	find_package(SDL2 REQUIRED CONFIG)
 endif()
@@ -102,7 +107,6 @@ execute_process(
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 add_definitions("-DImDrawIdx=unsigned int") # short is not enough for us
-add_definitions("-DIMGUI_IMPL_OPENGL_LOADER_GLAD") # We use glad
 # Configure GL3 renderer to be GLES2 compatible if GLES2 is enabled
 if(ENABLE_GLES2)
     add_definitions("-DIMGUI_IMPL_OPENGL_ES2")
@@ -120,10 +124,10 @@ string(REPLACE "GL/gl.h" "glad/glad.h" input "${input}")
 file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends/imgui_impl_opengl2.cpp" "${input}")
 
 # workaround for OpenGLES includes, need to be glad rather than gles itself
-file(READ "${CMAKE_CURRENT_SOURCE_DIR}/imgui/examples/imgui_impl_opengl3.cpp" input)
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends/imgui_impl_opengl3.cpp" input)
 string(REPLACE "GLES2/gl2.h" "glad/glad.h" input "${input}")
 string(REPLACE "GLES3/gl3.h" "glad/glad.h" input "${input}")
-file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/imgui/examples/imgui_impl_opengl3.cpp" "${input}")
+file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends/imgui_impl_opengl3.cpp" "${input}")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/imgui
 	${GLAD_INCLUDE_DIRS}
@@ -161,11 +165,6 @@ if(MINGW)
 target_link_libraries(imgui
 	SDL2::SDL2-static
 )
-elseif(ANDROID)
-	target_link_libraries(imgui
-		${GLAD_LIBRARIES}
-		${SDL2_LIBRARIES}
-	)
 else()
 target_link_libraries(imgui
 	SDL2::SDL2

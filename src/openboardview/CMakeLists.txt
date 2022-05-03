@@ -107,7 +107,6 @@ if(APPLE)
 elseif(ANDROID)
 	set(SOURCES ${SOURCES}
 		android.cpp
-		../SDL2/src/main/android/SDL_android_main.c
 	)
 endif()
 	set(SOURCES ${SOURCES}
@@ -166,17 +165,6 @@ endif()
 target_link_libraries(${PROJECT_NAME_LOWER}
 	SDL2::SDL2main
 )
-=======
-if(ANDROID)
-	target_link_libraries(${PROJECT_NAME_LOWER}
-		${SDL2_LIBRARIES}
-	)
-else()
-	target_link_libraries(${PROJECT_NAME_LOWER}
-		SDL2::SDL2
-		SDL2::SDL2main
-	)
-endif()
 
 if(NOT ANDROID)
 	install(TARGETS
