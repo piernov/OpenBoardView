@@ -57,31 +57,26 @@ public class OBVActivity extends SDLActivity {
 		}
 	}
 
-	public static byte[] readFile(String suri) {
-		try {
-			Uri uri = Uri.parse(suri);
+	public static byte[] readFile(String suri) throws IOException {
+		Uri uri = Uri.parse(suri);
 
-			if (!activity.takePersistentPerms(uri)) {
-				Log.e(TAG, "Persistent read permission for " + uri + " not granted.");
-				return new byte[0];
-			}
-
-			InputStream inputStream = activity.getContentResolver().openInputStream(uri);
-
-			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-			int nRead;
-			byte[] data = new byte[1024];
-
-			while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
-				buffer.write(data, 0, nRead);
-			}
-
-			buffer.flush();
-			return buffer.toByteArray();
-		} catch (IOException e) {
-			Log.e(TAG, "Error while reading " + suri + ": " + e);
+		if (!activity.takePersistentPerms(uri)) {
+			Log.e(TAG, "Persistent read permission for " + uri + " not granted.");
 			return new byte[0];
 		}
+
+		InputStream inputStream = activity.getContentResolver().openInputStream(uri);
+
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		int nRead;
+		byte[] data = new byte[1024];
+
+		while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
+			buffer.write(data, 0, nRead);
+		}
+
+		buffer.flush();
+		return buffer.toByteArray();
 	}
 
 	public native void openFileWrapper(String filePath);
