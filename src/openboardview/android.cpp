@@ -7,9 +7,9 @@
  * Because we can't call C++ inside a JNI function
  */
 void loadFileWrapper(char* path) {
-	std::string paths = std::string(path);
+	filesystem::path filepath = filesystem::u8path(path);
 	free(path);
-	app.LoadFile(paths);
+	app.LoadFile(filepath);
 }
 
 extern "C" {
