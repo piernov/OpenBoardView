@@ -3,9 +3,11 @@
 
 #include "utils.h"
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include <limits>
 
 #include <SDL.h>
@@ -14,12 +16,45 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+#define QUOTED_REGEX "|nonquoted_string|regex"
+#define ADD_NAME "|string|>"
+
+const char * child_names[] = {
+	"component_name" QUOTED_REGEX,
+	"component_name" ADD_NAME,
+	"pad_name" QUOTED_REGEX,
+	"pad_name" ADD_NAME,
+	"pin_name" QUOTED_REGEX,
+	"pin_name" ADD_NAME,
+	"shape_name" QUOTED_REGEX,
+	"shape_name" ADD_NAME,
+	"shape_pin_name" QUOTED_REGEX,
+	"shape_pin_name" ADD_NAME,
+};
+
+enum {
+	CHILD_COMPONENT_NAME = 0,
+	CHILD_PAD_NAME = 2,
+	CHILD_PIN_NAME = 4,
+	CHILD_SHAPE_NAME = 6,
+	CHILD_SHAPE_PIN_NAME = 8,
+};
+
+
 bool GenCADFile::verifyFormat(const std::vector<char> &buf) {
 	return find_str_in_buf("GENCAD", buf) && (find_str_in_buf("$HEADER", buf));
 }
 
 GenCADFile::GenCADFile(const std::vector<char> &buf) {
+	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
 	valid = parse_file(buf);
+
+	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+	auto latency = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
+	std::cerr << "GenCAD load latency: " << latency  << "µs" << std::endl;
+
 }
 
 bool GenCADFile::parse_file(const std::vector<char> &buf) {
@@ -168,7 +203,7 @@ bool GenCADFile::parse_components() {
 			mpc_ast_t *component_ast = mpc_ast_get_child_lb(components_ast, "component|>", i);
 
 			BRDPart brd_part;
-			char *component_name = get_nonquoted_or_quoted_string_child(component_ast, "component_name");
+			char *component_name = get_nonquoted_or_quoted_string_child(component_ast, CHILD_COMPONENT_NAME);
 			if (component_name) {
 				brd_part.name = component_name;
 			}
@@ -209,7 +244,7 @@ bool GenCADFile::parse_components() {
 
 			mpc_ast_t *shape_ref_ast = mpc_ast_get_child(component_ast, "shape_|>");
 			if (shape_ref_ast) {
-				char *shape_name_str = get_nonquoted_or_quoted_string_child(shape_ref_ast, "shape_name");
+				char *shape_name_str = get_nonquoted_or_quoted_string_child(shape_ref_ast, CHILD_SHAPE_NAME);
 				if (shape_name_str && *shape_name_str) {
 					if (!brd_part.mfgcode.empty()) {
 						brd_part.mfgcode += " SHAPE ";
@@ -258,7 +293,7 @@ bool GenCADFile::parse_shape_pins_to_component(
 			mpc_ast_t *pin_ast = mpc_ast_get_child_lb(shape_ast, "shapes_pin|>", i);
 			if (pin_ast) {
 				mpc_ast_t *pos_ast      = mpc_ast_get_child(pin_ast, "x_y_ref|>");
-				char *pin_name = get_nonquoted_or_quoted_string_child(pin_ast, "shape_pin_name");
+				char *pin_name = get_nonquoted_or_quoted_string_child(pin_ast, CHILD_SHAPE_PIN_NAME);
 				if (pos_ast && pin_name) {
 					BRDPin pin;
 					pin.radius = 0.5;
@@ -328,8 +363,8 @@ void GenCADFile::fill_signals_cache() {
 			j = mpc_ast_get_index_lb(signal_ast, "node|>", j);
 			if (j < 0) break;
 			mpc_ast_t *node_ast           = mpc_ast_get_child_lb(signal_ast, "node|>", j);
-			char *node_comp_name = get_nonquoted_or_quoted_string_child(node_ast, "component_name");
-			char *node_pin_name = get_nonquoted_or_quoted_string_child(node_ast, "pin_name");
+			char *node_comp_name = get_nonquoted_or_quoted_string_child(node_ast, CHILD_COMPONENT_NAME);
+			char *node_pin_name = get_nonquoted_or_quoted_string_child(node_ast, CHILD_PIN_NAME);
 			char *signal_name = get_stringtoend_child(signal_ast, "sig_name_to_end");
 			if (node_comp_name && node_pin_name && signal_name) {
 				ComponentPin key{node_comp_name, node_pin_name};
@@ -342,7 +377,7 @@ void GenCADFile::fill_signals_cache() {
 }
 
 const char *GenCADFile::get_signal_name_for_component_pin(const char *component_name, mpc_ast_t *pin_ast) {
-	char *pin_name = get_nonquoted_or_quoted_string_child(pin_ast, "shape_pin_name");
+	char *pin_name = get_nonquoted_or_quoted_string_child(pin_ast, CHILD_SHAPE_PIN_NAME);
 	if (!pin_name) return nullptr;
 
 	ComponentPin key{component_name, pin_name};
@@ -496,7 +531,7 @@ mpc_ast_t *GenCADFile::get_shape_by_name(const char *name) {
 			mpc_ast_t *shape_ast = mpc_ast_get_child_lb(shapes_ast, "shape|>", i);
 			if (!shape_ast) continue;
 
-			char *shape_name = get_nonquoted_or_quoted_string_child(shape_ast, "shape_name");
+			char *shape_name = get_nonquoted_or_quoted_string_child(shape_ast, CHILD_SHAPE_NAME);
 			if (shape_name && (strcmp(shape_name, name) == 0) && strlen(shape_name) == name_length) {
 				return shape_ast;
 			}
@@ -528,7 +563,7 @@ bool GenCADFile::is_shape_smd(mpc_ast_t *shape_ast) {
 			mpc_ast_t *pin_ast = mpc_ast_get_child_lb(shape_ast, "shapes_pin|>", i);
 			if (!pin_ast) continue;
 
-			char *pad_name = get_nonquoted_or_quoted_string_child(pin_ast, "pad_name");
+			char *pad_name = get_nonquoted_or_quoted_string_child(pin_ast, CHILD_PAD_NAME);
 			if (!pad_name) continue;
 
 			mpc_ast_t *padstack_ast = get_padstack_by_name(pad_name);
@@ -541,24 +576,38 @@ bool GenCADFile::is_shape_smd(mpc_ast_t *shape_ast) {
 	return true;
 }
 
-char *GenCADFile::get_nonquoted_or_quoted_string_child(mpc_ast_t *parent, const char *name) {
-	constexpr char *quoted_regex = "|nonquoted_string|regex";
-	constexpr char *add_string   = "|string|>";
 
-	static std::string key(1024, '\0'); // Reserve 1024 so we don't need to call malloc on the backend
-	key.assign(name);
-	key.append(quoted_regex);
+char *GenCADFile::get_nonquoted_or_quoted_string_child(mpc_ast_t *parent, int name) {
+	// const char quoted_regex[] = "|nonquoted_string|regex";
+	// const char add_string[]  = "|string|>";
+	//
+	// static char key[1024];
+	// const size_t len = strlen(name);
+	// std::memcpy(key, name, len);
+	// std::memcpy(key + len, quoted_regex, sizeof(quoted_regex));
+	// strncpy(key + len, quoted_regex, 1023 - len);
 
-	mpc_ast_t *ret_ast = mpc_ast_get_child(parent, key.c_str());
+	// static std::string key(1024, '\0'); // Reserve 1024 so we don't need to call malloc on the backend
+	// key = name;
+	// size_t name_size = key.size();
+	// key += quoted_regex;
+	// printf("%s\n", child_names[name]);
+	// printf("%s\n", child_names[name+1]);
+
+	mpc_ast_t *ret_ast = mpc_ast_get_child(parent, child_names[name]);
 	if (ret_ast) {
 		return ret_ast->contents;
 	}
 
-	key.clear();
-	key.assign(name);
-	key.append(add_string);
+	// key.clear();
+	// key = name;
+	// key += add_string;
+	// key.assign(add_string, name_size);
+	// strncpy(key + len, add_string, 1023 - len);
+	// std::memcpy(key + len, add_string, sizeof(add_string));
+	// printf("%s\n", key);
 
-	ret_ast = mpc_ast_get_child(parent, key.c_str());
+	ret_ast = mpc_ast_get_child(parent, child_names[name + 1]);
 	if (ret_ast) {
 		auto value_ast = mpc_ast_get_child(ret_ast, "regex");
 		if (value_ast) return value_ast->contents;
@@ -621,7 +670,7 @@ mpc_ast_t *GenCADFile::get_padstack_by_name(const char *padstack_name_wanted) {
 			mpc_ast_t *padstack_ast = mpc_ast_get_child_lb(padstacks_ast, "padstack|>", i);
 			if (!padstack_ast) continue;
 
-			char *padstack_name = get_nonquoted_or_quoted_string_child(padstack_ast, "pad_name");
+			char *padstack_name = get_nonquoted_or_quoted_string_child(padstack_ast, CHILD_PAD_NAME);
 			if (padstack_name && (strcmp(padstack_name, padstack_name_wanted) == 0)) {
 				return padstack_ast;
 			}
@@ -643,7 +692,7 @@ mpc_ast_t *GenCADFile::get_pad_by_name(const char *pad_name_wanted) {
 			mpc_ast_t *pad_ast = mpc_ast_get_child_lb(pads_ast, "pad|>", i);
 			if (!pad_ast) continue;
 
-			char *pad_name = get_nonquoted_or_quoted_string_child(pad_ast, "pad_name");
+			char *pad_name = get_nonquoted_or_quoted_string_child(pad_ast, CHILD_PAD_NAME);
 			if (pad_name && (strcmp(pad_name, pad_name_wanted) == 0)) {
 				return pad_ast;
 			}
@@ -662,7 +711,7 @@ double GenCADFile::get_padstack_radius(mpc_ast_t *padstack_ast) {
 			mpc_ast_t *pad_ref_ast = mpc_ast_get_child_lb(padstack_ast, "padstacks_pad|>", i);
 			if (!pad_ref_ast) continue;
 
-			char *pad_name = get_nonquoted_or_quoted_string_child(pad_ref_ast, "pad_name");
+			char *pad_name = get_nonquoted_or_quoted_string_child(pad_ref_ast, CHILD_PAD_NAME);
 			if (pad_name) {
 				mpc_ast_t *pad_ast = get_pad_by_name(pad_name);
 				if (pad_ast != nullptr) {
