@@ -15,7 +15,7 @@ struct XZZPCBFile : public BRDFileBase {
 	static bool verifyFormat(const std::vector<char> &buf);
 
   private:
-	uint64_t key = 0ul;
+	uint64_t key = 0xdcfc12ac00000000ul;
 	static const int XZZ_GLOBAL_SCALE = 10000;
 	std::unordered_map<uint32_t, std::string> net_dict;
 	std::unordered_map<std::string, std::unordered_map<std::string, std::string>> diode_dict; // <Net Name, <Pin Name, Reading>>
